@@ -1,0 +1,75 @@
+<main class="auth-hero">
+  <header class="nav">
+    <div class="brand">
+      <img src="/assets/logo-rpg.png" alt="Logo do site" class="logo" />
+      <h1 class="title">Reinos Perdidos RPG</h1>
+    </div>
+    <nav class="actions">
+      <a routerLink="/" class="btn btn-ghost">Home</a>
+      <a routerLink="/criar-conta" class="btn btn-primary">Criar conta</a>
+    </nav>
+  </header>
+
+  <section class="auth-content">
+    <div class="card">
+      <h2 class="card-title">Entrar</h2>
+
+      <!-- Erro de API -->
+      <div class="alert error" *ngIf="apiErrorMessage">
+        {{ apiErrorMessage }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <!-- E-mail -->
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" class="input"
+                 formControlName="email" placeholder="voce@exemplo.com" />
+          <div class="error" *ngIf="email.touched && email.invalid">
+            <span *ngIf="email.errors?.['required']">O e-mail é obrigatório.</span>
+            <span *ngIf="email.errors?.['email']">Informe um e-mail válido.</span>
+          </div>
+        </div>
+
+        <!-- Senha -->
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input id="senha" type="password" class="input"
+                 formControlName="senha" placeholder="••••••••" />
+          <div class="error" *ngIf="senha.touched && senha.invalid">
+            <span *ngIf="senha.errors?.['required']">A senha é obrigatória.</span>
+          </div>
+        </div>
+
+        <!-- Botão centralizado -->
+        <div class="form-actions">
+          <button class="btn btn-primary btn-lg" type="submit"
+                  [disabled]="form.invalid || isSubmitting">
+            {{ isSubmitting ? 'Entrando...' : 'Logar' }}
+          </button>
+        </div>
+
+        <!-- Links auxiliares -->
+        <p class="alt">
+          <a routerLink="/esqueci-senha" class="link">Esqueceu sua senha?</a>
+        </p>
+        <p class="alt">
+          Não tem conta?
+          <a routerLink="/criar-conta" class="link">Criar conta</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-left">
+        <img src="/assets/logo-fsa.png" alt="Logo da equipe" class="footer-logo" />
+        <span class="team">Equipe FSA RPG</span>
+      </div>
+      <div class="footer-right">
+        <span>© {{ currentYear }} Reinos Perdidos RPG. Todos os direitos reservados.</span>
+      </div>
+    </div>
+  </footer>
+</main>
