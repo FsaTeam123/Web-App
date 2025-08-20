@@ -5,11 +5,11 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 
 import { PageShellComponent } from '../../shared/ui/page-shell/page-shell.component';
-import { AppHeaderComponent } from '../../shared/ui/header/app-header.component';
 import { AppFooterComponent } from '../../shared/ui/footer/app-footer.component';
 import { NavLink } from '../../shared/models/nav-link.model';
 import { UserSessionService } from '../../core/session/user-session.service';
 import { AccountApiService, UsuarioDTO, SexoDTO } from '../../core/account-api.service';
+import { AppHeaderComponentFix } from '../../shared/ui/app-header-fixo/app-header-fixo.component';
 
 type PerfilForm = {
   nome: FormControl<string>;
@@ -24,7 +24,7 @@ type PerfilForm = {
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, HttpClientModule, RouterLink,
-    PageShellComponent, AppHeaderComponent, AppFooterComponent
+    PageShellComponent, AppFooterComponent, AppHeaderComponentFix
   ],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.css']

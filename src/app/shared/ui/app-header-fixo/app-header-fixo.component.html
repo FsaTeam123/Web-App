@@ -1,0 +1,65 @@
+<header class="nav" (click)="stop($event)">
+  <div class="brand">
+    <img [src]="logoSrc" alt="Logo do site" class="logo" />
+    <h1 class="title">{{ siteName }}</h1>
+  </div>
+
+  <div class="right">
+    <nav class="actions">
+      <ng-container *ngFor="let link of links; let i = index">
+        <div class="nav-item" [class.has-children]="link.children?.length"
+             *ngIf="link.children?.length; else simpleLink"
+             [class.open]="openIndex === i"
+             (mouseenter)="openIndex = i; alignSubmenu(submenu)"
+             (mouseleave)="openIndex = null">
+          <button type="button"
+                  class="btn"
+                  [ngClass]="{'btn-primary': isActive(i),'btn-ghost': !isActive(i)}"
+                  (click)="toggle(i); alignSubmenu(submenu)">
+            {{ link.label }} <span class="chev">▾</span>
+          </button>
+
+          <ul class="submenu" #submenu role="menu">
+            <li *ngFor="let child of link.children" role="none">
+              <a [routerLink]="child.route"
+                 role="menuitem"
+                 class="submenu-link"
+                 [ngClass]="{'active-submenu': isSubmenuActive(child.route)}"
+                 [attr.target]="child.newTab ? '_blank' : null"
+                 rel="noopener"
+                 (click)="onChildClick(child, $event)">
+                {{ child.label }}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <ng-template #simpleLink>
+          <a [routerLink]="link.route"
+             class="btn"
+             [ngClass]="{'btn-primary': isActive(i),'btn-ghost': !isActive(i)}">
+            {{ link.label }}
+          </a>
+        </ng-template>
+      </ng-container>
+    </nav>
+
+    <!-- Avatar + tag -->
+    <div class="user-slot">
+      <ng-container *ngIf="user$ | async as user; else guest">
+        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Minha conta">
+          <img [src]="user.fotoUrl || defaultAvatar" (error)="onImgError($event)" alt="Avatar do usuário">
+        </a>
+        <div class="user-tag" [title]="tag(user)">
+          {{ tag(user) }}
+        </div>
+      </ng-container>
+      <ng-template #guest>
+        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Perfil">
+          <img [src]="defaultAvatar" alt="Perfil">
+        </a>
+        <div class="user-tag">Convidado</div>
+      </ng-template>
+    </div>
+  </div>
+</header>

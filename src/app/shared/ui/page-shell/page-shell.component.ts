@@ -1,4 +1,3 @@
-// src/app/shared/ui/page-shell.component.ts
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -10,6 +9,5 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./page-shell.component.css']
 })
 export class PageShellComponent {
-  /** Alterna imagem/gif de fundo */
-  @Input() useAltBackground = false;
+  @Input() useAltBackground: boolean = false;
 }
