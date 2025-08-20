@@ -9,6 +9,7 @@ export interface CurrentUser {
   status?: string;
   fotoUrl?: string | null;
   nickname?: string | null;
+  idPerfil?: number; // Adicionando idPerfil para identificar o tipo de usuário
 }
 
 const STORAGE_KEY = 'auth_user';

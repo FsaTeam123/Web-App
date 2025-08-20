@@ -1,9 +1,8 @@
 <app-page-shell [useAltBackground]="useAltBackground">
-  <app-header shell-header
+  <app-header-fixo shell-header
               [siteName]="siteName"
-              [logoSrc]="'/assets/logo-rpg.png'"
-              [links]="links">
-  </app-header>
+              [logoSrc]="'/assets/logo-rpg.png'">
+  </app-header-fixo>
 
   <section class="perfil-wrap">
     <div class="card" *ngIf="!loading; else loadingTpl">

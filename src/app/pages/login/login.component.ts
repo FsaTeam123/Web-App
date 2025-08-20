@@ -15,6 +15,7 @@ interface LoginResponse {
     token: string;
     status: string;
     idUsuario: number;
+    idPerfil: number;
     nome: string;
     email: string;
     fotoUrl?: string;
@@ -82,7 +83,8 @@ export class LoginComponent {
               token: u.token,
               status: u.status,
               fotoUrl: u.fotoUrl || null,
-              nickname: u.nickname || null
+              nickname: u.nickname || null,
+              idPerfil: u.idPerfil
             });
 
             // (Opcional) Manter compat com seu armazenamento anterior
