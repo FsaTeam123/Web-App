@@ -6,10 +6,12 @@ import {
   AbstractControl, ValidationErrors, FormControl
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HttpClientModule, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpClientModule, HttpResponse, HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
+import { switchMap, catchError, of } from 'rxjs';
+import { API_ENDPOINTS, DEFAULT_AVATAR_PATH } from '../../../config/app-config';
 import { SignupService } from './signup.service';
 import { Sexo, CreateUserRequest, ApiError } from './models';
-import { finalize } from 'rxjs/operators';
 
 type SignupForm = {
   nome: FormControl<string>;
@@ -38,7 +40,7 @@ export class SignupComponent implements OnInit {
   flash: { type: 'success' | 'error'; text: string } | null = null;
   private flashTimer: any;
 
-  constructor(private fb: FormBuilder, private api: SignupService) {
+  constructor(private fb: FormBuilder, private api: SignupService, private http: HttpClient) {
     this.form = this.fb.nonNullable.group<SignupForm>({
       nome: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(2)]),
       nickname: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]),
@@ -118,7 +120,8 @@ export class SignupComponent implements OnInit {
       senha: v.senha,
       email: v.email,
       idSexo: Number(v.sexo),
-      idPerfil: 1
+      idPerfil: 1,
+      ativo: 1
     };
 
     this.isSubmitting = true;
@@ -126,11 +129,23 @@ export class SignupComponent implements OnInit {
       .pipe(finalize(() => { this.isSubmitting = false; })) // ⬅️ garante destravar o botão
       .subscribe({
         next: (resp) => {
-          if (resp.status === 200 || resp.status === 201) {
+          if ((resp.status === 200 || resp.status === 201) && resp.body?.data?.idUsuario) {
+            const id = resp.body.data.idUsuario as number;
+
+            // pega o blob do assets e envia
+            this.http.get(DEFAULT_AVATAR_PATH, { responseType: 'blob' }).pipe(
+              switchMap((blob) => {
+                const file = new File([blob], 'perfil-padrao.jpg', { type: blob.type || 'image/jpeg' });
+                const form = new FormData();
+                form.append('file', file, file.name);
+                return this.http.post(API_ENDPOINTS.usuarioFoto(id), form); // sem auth aqui
+              }),
+              catchError(() => of(null))
+            ).subscribe();
+
             this.showFlash('success', 'Usuário criado com sucesso!');
-            // opcional: this.form.reset({ nome:'', nickname:'', email:'', sexo:null, senha:'', confirmarSenha:'' } as any);
           } else {
-            this.showFlash('success', 'Usuário criado com sucesso.'); // fallback
+            this.showFlash('success', 'Usuário criado com sucesso.');
           }
         },
         error: (err) => {

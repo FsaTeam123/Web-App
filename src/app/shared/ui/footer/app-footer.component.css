@@ -1,0 +1,14 @@
+/* src/app/shared/ui/app-footer.component.css */
+:host{ display:block; width:100%; }
+.footer{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:14px clamp(12px,3vw,48px);
+  background: rgba(0,0,0,.2);
+}
+.footer-content{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap; color:#bdbdc2; font-size: clamp(.9rem,2.2vw,.95rem);
+}
+.footer-left{ display:flex; align-items:center; gap:10px; }
+.footer-logo{ width: clamp(120px,25vw,260px); height:auto; }
+.team{ color:#d4af37; font-weight:700; }

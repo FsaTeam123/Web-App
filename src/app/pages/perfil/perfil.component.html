@@ -1,0 +1,88 @@
+<app-page-shell [useAltBackground]="useAltBackground">
+  <app-header shell-header
+              [siteName]="siteName"
+              [logoSrc]="'/assets/logo-rpg.png'"
+              [links]="links">
+  </app-header>
+
+  <section class="perfil-wrap">
+    <div class="card" *ngIf="!loading; else loadingTpl">
+      <div class="card-header">
+        <div class="avatar-wrap">
+          <img [src]="fotoUrl || defaultAvatar" (error)="onImgError($event)" alt="Foto do usuário" />
+          <button class="btn btn-ghost btn-sm" [disabled]="uploading" (click)="triggerFile()">
+            {{ uploading ? 'Enviando...' : 'Trocar foto' }}
+          </button>
+          <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+        </div>
+        <div class="id-pill" *ngIf="usuario">#{{ usuario.idUsuario }}</div>
+      </div>
+
+      <div class="card-body">
+        <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+        <div class="alert error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+        <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+          <div class="grid">
+            <div class="form-group">
+              <label>Nome</label>
+              <input type="text" class="input" formControlName="nome" placeholder="Seu nome completo" />
+            </div>
+
+            <div class="form-group">
+              <label>Nickname</label>
+              <input type="text" class="input" formControlName="nickname" placeholder="Seu nickname" />
+            </div>
+
+            <div class="form-group">
+              <label>E-mail</label>
+              <input type="email" class="input" formControlName="email" placeholder="email@exemplo.com" />
+            </div>
+
+            <div class="form-group">
+              <label>Sexo</label>
+              <select class="input" formControlName="sexoId">
+                <option [ngValue]="null" disabled>Selecione</option>
+                <option *ngFor="let s of sexos" [ngValue]="s.idSexo">{{ s.nome }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Perfil</label>
+              <input type="text" class="input" [value]="usuario.perfil.nome || '-'" [disabled]="true" />
+            </div>
+
+            <div class="form-group">
+              <label>Ativo</label>
+              <input type="text" class="input" [value]="(usuario.ativo ? 'Sim' : 'Não')" [disabled]="true" />
+            </div>
+
+            <div class="form-group span-2">
+              <label>Senha</label>
+              <input type="password" class="input" formControlName="senha" placeholder="•••••••• (deixe em branco para não alterar)" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-ghost" *ngIf="!editMode" (click)="enableEdit()">Editar</button>
+            <button type="button" class="btn btn-ghost" *ngIf="editMode" (click)="cancelEdit()">Cancelar</button>
+            <button type="button" class="btn btn-ghost" routerLink="/inicio">Voltar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="!editMode || saving">
+              {{ saving ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <ng-template #loadingTpl>
+      <div class="loading-card">Carregando perfil…</div>
+    </ng-template>
+  </section>
+
+  <app-footer shell-footer
+              [siteName]="siteName"
+              [teamName]="'Equipe FSA RPG'"
+              [leftLogoSrc]="'/assets/logo-fsa.png'">
+  </app-footer>
+</app-page-shell>

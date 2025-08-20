@@ -4,8 +4,9 @@ import {
   FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
+import { UserSessionService } from '../../core/session/user-session.service';
 
 interface LoginResponse {
   status: number;
@@ -16,6 +17,8 @@ interface LoginResponse {
     idUsuario: number;
     nome: string;
     email: string;
+    fotoUrl?: string;
+    nickname?: string;
   };
 }
 
@@ -27,7 +30,7 @@ type LoginForm = {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HttpClientModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -40,7 +43,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private session: UserSessionService
   ) {
     this.form = this.fb.nonNullable.group<LoginForm>({
       email: this.fb.nonNullable.control('', [Validators.required, Validators.email]),
@@ -53,7 +57,7 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.form.invalid) {
-      this.form.markAllAsTouched(); 
+      this.form.markAllAsTouched();
       return;
     }
 
@@ -62,33 +66,44 @@ export class LoginComponent {
 
     const payload = this.form.getRawValue();
 
-    this.http.post<LoginResponse>('http://15.228.149.190:8085/auth/login', payload)
-      .pipe(
-        finalize(() => {
-          // ✅ sempre executa, com sucesso ou erro
-          this.isSubmitting = false;
-        })
-      )
+    this.http.post<LoginResponse>('http://localhost:8085/auth/login', payload)
+      .pipe(finalize(() => { this.isSubmitting = false; }))
       .subscribe({
         next: (res) => {
           if (res?.status === 200 && res?.data) {
-            localStorage.setItem('auth_token', res.data.token);
+            const u = res.data;
+            console.log('Login bem-sucedido:', u);
+
+            // Salva a sessão completa (token + dados + foto + nickname)
+            this.session.set({
+              idUsuario: u.idUsuario,
+              nome: u.nome,
+              email: u.email,
+              token: u.token,
+              status: u.status,
+              fotoUrl: u.fotoUrl || null,
+              nickname: u.nickname || null
+            });
+
+            // (Opcional) Manter compat com seu armazenamento anterior
             localStorage.setItem('auth_user', JSON.stringify({
-              idUsuario: res.data.idUsuario,
-              nome: res.data.nome,
-              email: res.data.email,
-              status: res.data.status
+              idUsuario: u.idUsuario,
+              nome: u.nome,
+              email: u.email,
+              status: u.status,
+              token: u.token,
+              fotoUrl: u.fotoUrl || null,
+              nickname: u.nickname || null
             }));
+
             this.router.navigate(['/inicio']);
           } else {
             this.apiErrorMessage = res?.message || 'Falha no login.';
-            // opcional: limpar o campo senha
             this.senha.reset();
           }
         },
         error: (err) => {
           this.apiErrorMessage = err?.error?.message || 'Erro ao realizar login.';
-          // opcional: limpar o campo senha
           this.senha.reset();
         }
       });

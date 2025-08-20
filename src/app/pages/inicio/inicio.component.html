@@ -1,0 +1,23 @@
+<app-page-shell [useAltBackground]="useAltBackground">
+  <!-- Header -->
+  <app-header shell-header
+              [siteName]="siteName"
+              [logoSrc]="'/assets/logo-rpg.png'"
+              [links]="links">
+  </app-header>
+
+  <!-- Conteúdo da página -->
+  <h2 class="hero-content">Bem-vindo, <span>aventureiro!</span></h2>
+  <p class="lead">Organize campanhas, convide amigos e explore mundos épicos.</p>
+  <div class="cta">
+    <a routerLink="/entrar-secao" class="btn btn-primary btn-lg">Entrar numa seção</a>
+    <a routerLink="/mestre-secao" class="btn btn-ghost btn-lg">Mestre uma seção</a>
+  </div>
+
+  <!-- Footer -->
+  <app-footer shell-footer
+              [siteName]="siteName"
+              [teamName]="'Equipe FSA RPG'"
+              [leftLogoSrc]="'/assets/logo-fsa.png'">
+  </app-footer>
+</app-page-shell>

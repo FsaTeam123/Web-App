@@ -1,0 +1,65 @@
+<header class="nav" (click)="stop($event)">
+  <div class="brand">
+    <img [src]="logoSrc" alt="Logo do site" class="logo" />
+    <h1 class="title">{{ siteName }}</h1>
+  </div>
+
+  <div class="right">
+    <nav class="actions">
+      <ng-container *ngFor="let l of links; let i = index">
+        <div #navItem class="nav-item" [class.has-children]="l.children?.length"
+             *ngIf="l.children?.length; else simpleLink"
+             [class.open]="openIndex === i"
+             (mouseenter)="openIndex = i; alignSubmenu(submenu)"
+             (mouseleave)="openIndex = null">
+          <button type="button"
+                  class="btn"
+                  [ngClass]="{ 'btn-primary': l.variant === 'primary', 'btn-ghost': l.variant !== 'primary' }"
+                  (click)="toggle(i); alignSubmenu(submenu)">
+            {{ l.label }} <span class="chev">▾</span>
+          </button>
+
+          <ul class="submenu" #submenu role="menu">
+            <li *ngFor="let c of l.children" role="none">
+              <a [routerLink]="c.route"
+                 role="menuitem"
+                 class="submenu-link"
+                 [attr.target]="c.newTab ? '_blank' : null"
+                 rel="noopener"
+                 (click)="onChildClick(c, $event)">
+                {{ c.label }}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <ng-template #simpleLink>
+          <a #navItem
+             [routerLink]="l.route"
+             class="btn"
+             [ngClass]="{ 'btn-primary': l.variant === 'primary', 'btn-ghost': l.variant !== 'primary' }">
+            {{ l.label }}
+          </a>
+        </ng-template>
+      </ng-container>
+    </nav>
+
+    <!-- Avatar + tag -->
+    <div class="user-slot">
+      <ng-container *ngIf="user$ | async as user; else guest">
+        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Minha conta">
+          <img [src]="user.fotoUrl || defaultAvatar" (error)="onImgError($event)" alt="Avatar do usuário">
+        </a>
+        <div class="user-tag" [title]="tag(user)">
+          {{ tag(user) }}
+        </div>
+      </ng-container>
+      <ng-template #guest>
+        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Perfil">
+          <img [src]="defaultAvatar" alt="Perfil">
+        </a>
+        <div class="user-tag">Convidado</div>
+      </ng-template>
+    </div>
+  </div>
+</header>
