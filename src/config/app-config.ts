@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8085';
+export const API_BASE_URL = 'http://localhost:8085'; // Base URL for the API
 
 export const API_ENDPOINTS = {
   sexos: `${API_BASE_URL}/sexos`,
@@ -6,5 +6,8 @@ export const API_ENDPOINTS = {
   login: `${API_BASE_URL}/auth/login`,
   usuariosReset: `${API_BASE_URL}/usuarios/reset`,      
   verifyCode: `${API_BASE_URL}/auth/verify-code`,        
-  atualizarUsuario: `${API_BASE_URL}/usuarios/atualizar`
+  atualizarUsuario: `${API_BASE_URL}/usuarios/atualizar`,
+  usuarioFoto: (id: number) => `${API_BASE_URL}/usuarios/${id}/foto`,
 };
+
+export const DEFAULT_AVATAR_PATH = '/assets/perfil-padrao.jpg';

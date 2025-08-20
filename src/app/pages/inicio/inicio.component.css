@@ -1,0 +1,49 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  color: #f4f4f5;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
+  overflow-x: hidden;
+}
+
+/* Tipografia e CTA do conteúdo que o Inicio projeta */
+h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.4rem, 4.5vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: .3px;
+  text-align: center;
+}
+h2 span { color: #e6bd3b; }
+
+p.lead {
+  margin: 0 0 18px;
+  color: #d6d6de;
+  font-size: clamp(1rem, 2.4vw, 1.125rem);
+  text-align: center;
+}
+
+.cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Botões da CTA (copiados do seu header para manter consistência) */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 16px;
+  border-radius: 14px; border: 1px solid transparent;
+  font-weight: 700; text-decoration: none;
+  transition: transform .12s, box-shadow .12s, background-color .12s, border-color .12s;
+  white-space: normal; color: #f4f4f5;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background:#d4af37; color:#121212; border-color:#c29b2e; box-shadow:0 6px 18px rgba(212,175,55,.2); }
+.btn-primary:hover { background:#e6bd3b; border-color:#e6bd3b; }
+.btn-ghost { background:transparent; color:#f4f4f5; border-color:rgba(255,255,255,.18); }
+.btn-ghost:hover { background:rgba(255,255,255,.06); }
+
+.btn-lg { padding: 12px 18px; font-size: clamp(.95rem, 1.6vw, 1.05rem); }

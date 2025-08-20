@@ -12,6 +12,7 @@ export interface CreateUserRequest {
   email: string;
   idSexo: number;
   idPerfil: number; // sempre 1
+  ativo: number;   // sempre 1
 }
 
 export interface ApiError {
