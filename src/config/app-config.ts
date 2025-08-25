@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8085'; // Base URL for the API
+export const API_BASE_URL = 'http://5.228.149.190:8085'; // Base URL for the API
 
 export const API_ENDPOINTS = {
   sexos: `${API_BASE_URL}/sexos`,
