@@ -24,7 +24,7 @@ export class AppHeaderComponent implements AfterViewInit, OnInit {
   openIndex: number | null = null;
   user$!: Observable<CurrentUser | null>;   // <-- só declara aqui
 
-  defaultAvatar = '/assets/perfil-padrao.png';
+  defaultAvatar = '/assets/perfil-padrao.jpg';
 
   constructor(
     private session: UserSessionService,

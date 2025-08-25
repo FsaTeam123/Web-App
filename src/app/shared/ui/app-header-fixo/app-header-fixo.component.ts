@@ -35,7 +35,7 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
   openIndex: number | null = null;
   user$!: Observable<CurrentUser | null>;
 
-  defaultAvatar = '/assets/perfil-padrao.png';
+  defaultAvatar = '/assets/perfil-padrao.jpg';
 
   constructor(
     private session: UserSessionService,

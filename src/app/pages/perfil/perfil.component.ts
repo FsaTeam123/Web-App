@@ -50,7 +50,7 @@ export class PerfilComponent implements OnInit {
 
   siteName = 'Reinos Perdidos RPG';
   useAltBackground = false;
-  defaultAvatar = '/assets/perfil-padrao.png';
+  defaultAvatar = '/assets/perfil-padrao.jpg';
   fotoUrl: string | null = null;
 
   links: NavLink[] = [
