@@ -4,14 +4,34 @@
     <h1 class="title">{{ siteName }}</h1>
   </div>
 
+  <!-- Botão hambúrguer (só aparece no mobile via CSS) -->
+  <button
+    class="hamburger"
+    type="button"
+    aria-label="Abrir menu"
+    [attr.aria-expanded]="isMobileOpen"
+    aria-controls="primary-actions"
+    (click)="toggleMobile()">
+    <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+  </button>
+
   <div class="right">
-    <nav class="actions">
+    <nav
+      id="primary-actions"
+      class="actions"
+      [class.is-open]="isMobileOpen"
+      (click)="stop($event)">
+
       <ng-container *ngFor="let link of links; let i = index">
-        <div class="nav-item" [class.has-children]="link.children?.length"
+        <!-- item com submenu -->
+        <div class="nav-item"
+             #navItem
+             [class.has-children]="link.children?.length"
              *ngIf="link.children?.length; else simpleLink"
              [class.open]="openIndex === i"
              (mouseenter)="openIndex = i; alignSubmenu(submenu)"
              (mouseleave)="openIndex = null">
+
           <button type="button"
                   class="btn"
                   [ngClass]="{'btn-primary': isActive(i),'btn-ghost': !isActive(i)}"
@@ -34,10 +54,12 @@
           </ul>
         </div>
 
+        <!-- link simples -->
         <ng-template #simpleLink>
           <a [routerLink]="link.route"
              class="btn"
-             [ngClass]="{'btn-primary': isActive(i),'btn-ghost': !isActive(i)}">
+             [ngClass]="{'btn-primary': isActive(i),'btn-ghost': !isActive(i)}"
+             (click)="closeAll()">
             {{ link.label }}
           </a>
         </ng-template>
@@ -47,7 +69,7 @@
     <!-- Avatar + tag -->
     <div class="user-slot">
       <ng-container *ngIf="user$ | async as user; else guest">
-        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Minha conta">
+        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Minha conta" (click)="closeAll()">
           <img [src]="user.fotoUrl || defaultAvatar" (error)="onImgError($event)" alt="Avatar do usuário">
         </a>
         <div class="user-tag" [title]="tag(user)">
@@ -55,7 +77,7 @@
         </div>
       </ng-container>
       <ng-template #guest>
-        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Perfil">
+        <a class="avatar-btn" [routerLink]="'/conta/perfil'" title="Perfil" (click)="closeAll()">
           <img [src]="defaultAvatar" alt="Perfil">
         </a>
         <div class="user-tag">Convidado</div>
@@ -63,3 +85,6 @@
     </div>
   </div>
 </header>
+
+<!-- Backdrop: só no mobile quando o menu está aberto -->
+<div class="backdrop" *ngIf="isMobileOpen" (click)="closeAll()" aria-hidden="true"></div>

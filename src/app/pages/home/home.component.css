@@ -3,29 +3,29 @@
   min-height: 100dvh;
   color: #f4f4f5;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
-  overflow-x: hidden;               /* garante 0 scroll lateral */
+  overflow-x: hidden;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
 .hero {
   min-height: 100dvh;
-  width: 100%;                      /* ocupa toda a largura */
+  width: 100%;
   display: grid;
-  grid-template-rows: auto 1fr auto;/* header / conteúdo / footer */
+  grid-template-rows: auto 1fr auto;
   background:
     linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
-    url('/assets/fundo-home.png') center/cover no-repeat; 
+    url('/assets/fundo-home.png') center/cover no-repeat;
 }
 
-/* --- Containers 100% fluidos (SEM max-width) --- */
+/* Containers fluidos */
 .nav,
 .hero-content,
 .footer {
   width: 100%;
-  padding-inline: clamp(12px, 3vw, 48px);  /* resguarda as bordas em qualquer tela */
+  padding-inline: clamp(12px, 3vw, 48px);
 }
 
-/* --- Header --- */
+/* Header */
 .nav {
   display: flex;
   align-items: center;
@@ -34,35 +34,35 @@
   padding-block: 12px;
   border-bottom: 1px solid rgba(255,255,255,.08);
   backdrop-filter: blur(6px);
-  flex-wrap: wrap;                   /* permite quebrar no mobile sem overflow */
+  flex-wrap: wrap;
+  position: relative; /* base para o painel mobile */
+  z-index: 10;
 }
 
-.brand {
-  display: flex; align-items: center; gap: clamp(8px, 2vw, 14px);
-  min-width: 0;                      /* evita estourar a largura */
-}
+.brand { display: flex; align-items: center; gap: clamp(8px, 2vw, 14px); min-width: 0; }
 .logo { width: clamp(48px, 8vw, 120px); height: auto; flex-shrink: 0; }
 .title {
   margin: 0; font-weight: 800;
   font-size: clamp(1.1rem, 2.5vw, 1.9rem);
   line-height: 1.1;
-  overflow-wrap: anywhere;           /* nomes longos não estouram */
+  overflow-wrap: anywhere;
 }
 
+/* Ações (desktop) */
 .actions {
   display: flex; gap: 10px; flex-wrap: wrap;
   justify-content: flex-end;
-  min-width: 0;                      /* deixa flex encolher */
+  min-width: 0;
 }
 
-/* --- Botões --- */
+/* Botões */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
   padding: 10px 16px;
   border-radius: 14px; border: 1px solid transparent;
   font-weight: 700; text-decoration: none;
   transition: transform .12s, box-shadow .12s, background-color .12s, border-color .12s;
-  white-space: normal;               /* pode quebrar linha no mobile */
+  white-space: normal;
 }
 .btn:hover { transform: translateY(-1px); }
 .btn-primary {
@@ -74,7 +74,7 @@
 .btn-ghost:hover { background:rgba(255,255,255,.06); }
 .btn-lg { padding: 12px 18px; font-size: clamp(.95rem, 1.6vw, 1.05rem); }
 
-/* --- Conteúdo principal --- */
+/* Conteúdo principal */
 .hero-content {
   display: grid; place-items: center; text-align: center;
   padding-block: clamp(24px, 8vh, 80px);
@@ -90,13 +90,9 @@
   font-size: clamp(1rem, 2.4vw, 1.125rem);
   overflow-wrap: anywhere;
 }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
 
-.cta {
-  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
-  width: 100%;
-}
-
-/* --- Footer --- */
+/* Footer */
 .footer {
   border-top: 1px solid rgba(255,255,255,.08);
   padding-block: 14px;
@@ -111,17 +107,55 @@
 .footer-logo { width: clamp(120px, 25vw, 260px); height: auto; }
 .team { color: #e6bd3b; font-weight: 700; }
 
-/* Imagens nunca passam da largura da tela */
+/* Imagens responsivas */
 img { max-width: 100%; height: auto; }
 
-/* --- Breakpoints para comportar SEM overflow --- */
-@media (max-width: 680px) {
-  .nav { row-gap: 8px; }
-  .brand { width: 100%; justify-content: center; }
-  .actions { width: 100%; justify-content: stretch; }
-  .actions .btn { flex: 1 1 auto; }        /* botões ocupam a largura disponível */
+/* ---------- HAMBÚRGUER ---------- */
+.hamburger {
+  display: none; /* só no mobile */
+  width: 42px; height: 36px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  cursor: pointer; padding: 6px 8px;
+}
+.hamburger .bar {
+  display: block; height: 2px; margin: 5px 0; background: #f4f4f5;
 }
 
-@media (max-width: 420px) {
+/* ---------- MOBILE ---------- */
+@media (max-width: 680px) {
+  .nav { row-gap: 8px; }
+
+  /* mostra o hambúrguer e esconde actions por padrão */
+  .hamburger { display: inline-block; }
+  .actions { display: none; }
+
+  /* painel aberto */
+  .actions.is-open {
+    display: flex;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: clamp(12px,3vw,24px);
+    left: clamp(12px,3vw,24px);
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(20,20,24,.96);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+    z-index: 60;
+  }
+
+  /* reorganização visual */
+  .brand { width: 100%; justify-content: center; }
   .title { text-align: center; }
+  .cta .btn { flex: 1 1 auto; }
+}
+
+/* Backdrop quando menu mobile está aberto */
+.backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  z-index: 50;
 }

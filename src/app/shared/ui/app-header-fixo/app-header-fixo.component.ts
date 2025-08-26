@@ -6,7 +6,7 @@ import {
   QueryList,
   ViewChildren,
   ElementRef,
-  Input 
+  Input
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -23,18 +23,18 @@ import { Observable } from 'rxjs';
   styleUrls: ['./app-header-fixo.component.css']
 })
 export class AppHeaderComponentFix implements OnInit, AfterViewInit {
-  @Input() siteName: string = 'Reinos Perdidos RPG';  // @Input() para siteName
-  @Input() logoSrc: string = 'assets/logo-rpg.png';  // @Input() para logoSrc
+  @Input() siteName: string = 'Reinos Perdidos RPG';
+  @Input() logoSrc: string = 'assets/logo-rpg.png';
 
   idPerfil!: number;
-
-  links: NavLink[] = []; // Inicialmente vazio
+  links: NavLink[] = [];
 
   @ViewChildren('navItem') navItems!: QueryList<ElementRef<HTMLElement>>;
 
-  openIndex: number | null = null;
-  user$!: Observable<CurrentUser | null>;
+  openIndex: number | null = null;   // submenu aberto
+  isMobileOpen = false;               // estado do menu mobile
 
+  user$!: Observable<CurrentUser | null>;
   defaultAvatar = '/assets/perfil-padrao.jpg';
 
   constructor(
@@ -45,9 +45,8 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.user$ = this.session.user$;
     this.idPerfil = this.session.get()?.idPerfil ?? 0;
-    console.log('ID do perfil:', this.idPerfil);
 
-    // Montando o menu dinamicamente
+    // Monta menu dinamicamente (mantido como estava)
     this.links = [
       { label: 'Home', route: '/inicio', variant: 'ghost' },
       {
@@ -86,6 +85,40 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
     ];
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => this.recalcAlign(), 0);
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.recalcAlign();
+    // se virar desktop, garante que o menu mobile esteja fechado
+    if (window.innerWidth >= 680 && this.isMobileOpen) {
+      this.isMobileOpen = false;
+    }
+  }
+
+  @HostListener('document:click')
+  closeAll() {
+    this.openIndex = null;
+    this.isMobileOpen = false;
+  }
+
+  stop(e: Event) { e.stopPropagation(); }
+
+  toggle(i: number) {
+    // toggle do submenu (funciona igual no desktop e mobile)
+    this.openIndex = this.openIndex === i ? null : i;
+  }
+
+  toggleMobile() {
+    this.isMobileOpen = !this.isMobileOpen;
+  }
+
+  closeMobile() {
+    this.isMobileOpen = false;
+  }
+
   onImgError(ev: Event) {
     (ev.target as HTMLImageElement).src = this.defaultAvatar;
   }
@@ -101,30 +134,25 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
     if (this.links[index].children) {
       return currentRoute === linkRoute || this.links[index].children!.some(child => currentRoute.includes(child.route));
     }
-
     return currentRoute === linkRoute;
   }
 
-  toggle(i: number) {
-    this.openIndex = this.openIndex === i ? null : i;
+  isSubmenuActive(childRoute: string): boolean {
+    const currentRoute = this.router.url.split('?')[0];
+    return currentRoute === childRoute;
   }
 
-  @HostListener('document:click')
-  closeAll() {
-    this.openIndex = null;
-  }
-
-  stop(e: Event) {
-    e.stopPropagation();
-  }
-
-  ngAfterViewInit(): void {
-    setTimeout(() => this.recalcAlign(), 0);
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    this.recalcAlign();
+  onChildClick(c: NavChildLink, ev: MouseEvent) {
+    const isLogout = c.label?.toLowerCase().includes('deslogar');
+    if (isLogout) {
+      ev.preventDefault();
+      this.session.logout();
+      this.closeAll();
+      this.router.navigate(['/']);
+    } else {
+      // fecha menu mobile ao navegar
+      this.closeAll();
+    }
   }
 
   private recalcAlign() {
@@ -149,22 +177,5 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
     if (parentRect.left + maxWidthPx > window.innerWidth - 8) {
       el.classList.add('align-right');
     }
-  }
-
-  onChildClick(c: NavChildLink, ev: MouseEvent) {
-    const isLogout = c.label?.toLowerCase().includes('deslogar');
-    if (isLogout) {
-      ev.preventDefault();
-      this.session.logout();
-      this.closeAll();
-      this.router.navigate(['/']);
-    } else {
-      this.closeAll();
-    }
-  }
-
-  isSubmenuActive(childRoute: string): boolean {
-    const currentRoute = this.router.url.split('?')[0];
-    return currentRoute === childRoute;
   }
 }
