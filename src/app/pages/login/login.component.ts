@@ -7,6 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { UserSessionService } from '../../core/session/user-session.service';
+import { API_ENDPOINTS } from '../../../config/app-config';
 
 interface LoginResponse {
   status: number;
@@ -67,7 +68,7 @@ export class LoginComponent {
 
     const payload = this.form.getRawValue();
 
-    this.http.post<LoginResponse>('http://localhost:8085/auth/login', payload)
+    this.http.post<LoginResponse>(API_ENDPOINTS.login, payload)
       .pipe(finalize(() => { this.isSubmitting = false; }))
       .subscribe({
         next: (res) => {
