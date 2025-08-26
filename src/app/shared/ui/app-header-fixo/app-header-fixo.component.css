@@ -9,6 +9,7 @@
   backdrop-filter: blur(6px);
   flex-wrap:wrap;
   overflow: visible;
+  background: rgba(12,12,16,.7);
 }
 .brand{ display:flex; align-items:center; gap: clamp(8px,2vw,14px); min-width:0; }
 .logo{ width: clamp(48px,8vw,120px); height:auto; flex-shrink:0; }
@@ -21,6 +22,7 @@
 /* cluster à direita: nav + user */
 .right{ display:flex; align-items:center; gap:12px; min-width:0; }
 
+/* AÇÕES (nav) */
 .actions{
   display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; min-width:0;
   overflow: visible;
@@ -43,7 +45,7 @@
 .nav-item { position: relative; }
 .nav-item.has-children > .btn .chev { margin-left: .5rem; font-size: .9em; opacity: .85; }
 
-/* submenu */
+/* submenu (desktop) */
 .submenu{
   position: absolute;
   top: 100%;
@@ -75,6 +77,11 @@
 }
 .submenu-link:hover{ background: rgba(255,255,255,.06); }
 
+.active-submenu {
+  background-color: #f1a31f;
+  color: #fff;
+}
+
 /* Avatar + tag */
 .user-slot{ display:flex; align-items:center; gap:10px; }
 .avatar-btn{
@@ -89,21 +96,62 @@
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   max-width: 180px;
 }
-.active-submenu {
-  background-color: #f1a31f;  /* Cor alaranjada, você pode ajustar conforme necessário */
-  color: #fff;  /* Garantir que o texto fique visível */
+
+/* -------- HAMBÚRGUER -------- */
+.hamburger {
+  display: none;
+  width: 42px; height: 36px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  cursor: pointer; padding: 6px 8px;
+}
+.hamburger .bar {
+  display: block; height: 2px; margin: 5px 0; background: #f4f4f5;
 }
 
-/* mobile */
+/* -------- MOBILE -------- */
 @media (max-width: 680px){
   .nav{ row-gap: 8px; }
-  .actions{ width:100%; gap:8px; }
+
+  /* mostra botão hambúrguer; esconde nav inline */
+  .hamburger { display: inline-block; }
+  .actions {
+    display: none;             /* default: escondido no mobile */
+  }
+  .actions.is-open {
+    display: flex;             /* quando aberto, vira painel */
+    position: absolute;
+    top: calc(100% + 6px);
+    right: clamp(12px,3vw,24px);
+    left: clamp(12px,3vw,24px); /* fica centrado com respiro lateral */
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(20,20,24,.96);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+    z-index: 60;
+  }
+
   .nav-item { width: 100%; }
   .nav-item.has-children > .btn { width: 100%; justify-content: space-between; }
+
+  /* submenu no mobile: empilhado, sem absolute */
   .submenu{
     position: static; display: none; margin-top: 6px; width: 100%;
     box-shadow: none; max-width: none; max-height: none; overflow: visible;
+    background: rgba(18,18,18,.9);
+    border: 1px solid rgba(255,255,255,.08);
   }
   .nav-item.has-children.open > .submenu { display: block; }
-  .user-tag{ display:none; } /* no celular mostramos só o avatar pra não quebrar */
+
+  .user-tag{ display:none; } /* no celular só o avatar pra não quebrar */
+}
+
+/* Backdrop quando menu mobile está aberto */
+.backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  z-index: 50;
 }

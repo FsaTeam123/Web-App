@@ -1,26 +1,42 @@
 <!-- src/app/pages/home/home.component.html -->
-<main class="hero">
-  <header class="nav">
+<main class="hero" (click)="closeMobile()">
+  <header class="nav" (click)="$event.stopPropagation()">
     <div class="brand">
       <img src="assets/logo-rpg.png" alt="Logo do site" class="logo" />
       <h1 class="title">{{ siteName }}</h1>
     </div>
-    <nav class="actions">
-      <a routerLink="/login" class="btn btn-ghost">Login</a>
-      <a routerLink="/criar-conta" class="btn btn-primary">Criar conta</a>
+
+    <!-- Botão hambúrguer (só aparece no mobile via CSS) -->
+    <button
+      class="hamburger"
+      type="button"
+      aria-label="Abrir menu"
+      [attr.aria-expanded]="isMobileOpen"
+      aria-controls="home-actions"
+      (click)="toggleMobile()">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+
+    <nav
+      id="home-actions"
+      class="actions"
+      [class.is-open]="isMobileOpen"
+      (click)="$event.stopPropagation()">
+      <a routerLink="/login" class="btn btn-ghost" (click)="closeMobile()">Login</a>
+      <a routerLink="/criar-conta" class="btn btn-primary" (click)="closeMobile()">Criar conta</a>
     </nav>
   </header>
 
-  <section class="hero-content">
+  <section class="hero-content" (click)="$event.stopPropagation()">
     <h2>Bem-vindo aos <span>{{ siteName }}</span></h2>
     <p>Gerencie personagens, campanhas e aventuras em um só lugar.</p>
     <div class="cta">
-      <a routerLink="/criar-conta" class="btn btn-primary btn-lg">Começar agora</a>
-      <a routerLink="/login" class="btn btn-ghost btn-lg">Já tenho conta</a>
+      <a routerLink="/criar-conta" class="btn btn-primary btn-lg" (click)="closeMobile()">Começar agora</a>
+      <a routerLink="/login" class="btn btn-ghost btn-lg" (click)="closeMobile()">Já tenho conta</a>
     </div>
   </section>
 
-  <footer class="footer">
+  <footer class="footer" (click)="$event.stopPropagation()">
     <div class="footer-content">
       <div class="footer-left">
         <img src="assets/logo-fsa.png" alt="Logo da equipe" class="footer-logo" />
@@ -31,4 +47,7 @@
       </div>
     </div>
   </footer>
+
+  <!-- Backdrop só quando menu mobile está aberto -->
+  <div class="backdrop" *ngIf="isMobileOpen" (click)="closeMobile()" aria-hidden="true"></div>
 </main>

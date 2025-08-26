@@ -1,11 +1,61 @@
+/* 1) Zera a borda branca padrão do navegador */
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  background: #000; /* ou a cor de fundo desejada */
+  width: 100%;
+  min-height: 100%;
+  background: #0e0e12; /* a mesma paleta escura do app */
 }
-body {
-  width: 100vw;
-  min-height: 100vh;
+
+/* 2) Garante que seu host e wrappers não deixem “faixas” brancas */
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #0e0e12;  /* pinta atrás do card */
+  color: #f4f4f5;
+  overflow-x: hidden;    /* mantém sem scroll lateral */
+}
+
+/* 3) Evita que wrappers externos criem área clara ao redor */
+app-page-shell,
+app-header-fixo,
+app-footer,
+[shell-header] {
+  position: relative;
+  overflow: visible !important;
+  z-index: 100; /* sobre o fundo, abaixo dos menus */
+}
+[shell-footer] {
+  display: block;
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  background: transparent; /* o fundo já está no :host/body */
+  overflow-x: hidden;
+}
+
+/* 4) Seu container continua igual, só reforço para não “somar” largura */
+.perfil-wrap,
+.card,
+.loading-card {
+  box-sizing: border-box;
+}
+
+/* 5) (opcional) Se o page-shell aplica alguma imagem de fundo própria: 
+      faça ela cobrir sem sobras */
+app-page-shell {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 2) O próprio header fica acima */
+header.nav {
+  position: relative;
+  z-index: 2000;         /* acima do conteúdo da página */
+  overflow: visible;     /* não clipa os filhos */
+}
+
+.submenu {
+  z-index: 3000;         /* maior que header.nav */
 }

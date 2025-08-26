@@ -67,7 +67,7 @@ export class LoginComponent {
 
     const payload = this.form.getRawValue();
 
-    this.http.post<LoginResponse>('https://t7tsd4gbsd.execute-api.sa-east-1.amazonaws.com/auth/login', payload)
+    this.http.post<LoginResponse>('http://localhost:8085/auth/login', payload)
       .pipe(finalize(() => { this.isSubmitting = false; }))
       .subscribe({
         next: (res) => {

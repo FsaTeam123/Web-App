@@ -13,4 +13,14 @@ export class HomeComponent {
   siteName = 'Reinos Perdidos RPG';
   teamName = 'Equipe FSA RPG';
   currentYear = new Date().getFullYear();
+
+  // estado do menu mobile
+  isMobileOpen = false;
+
+  toggleMobile() {
+    this.isMobileOpen = !this.isMobileOpen;
+  }
+  closeMobile() {
+    this.isMobileOpen = false;
+  }
 }
