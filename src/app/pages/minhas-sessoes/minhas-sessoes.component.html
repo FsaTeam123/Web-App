@@ -1,0 +1,39 @@
+<!-- src/app/pages/minhas-sessoes/minhas-sessoes.component.html -->
+<app-page-shell [useAltBackground]="true">
+  <app-header-fixo shell-header
+                   [siteName]="'Reinos Perdidos RPG'"
+                   [logoSrc]="'/assets/logo-rpg.png'">
+  </app-header-fixo>
+
+  <section class="wrap">
+    <h2>Minhas <span>Sessões</span></h2>
+
+    <div *ngIf="loading" class="muted">Carregando…</div>
+
+    <div class="block">
+      <h3>Mestradas</h3>
+      <div class="cards">
+        <button class="card" *ngFor="let j of mestradas" (click)="irParaSessao(j)">
+          <div class="card-title">{{ j?.titulo }}</div>
+        </button>
+        <div class="muted" *ngIf="!mestradas?.length">Nenhuma no momento.</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Jogadas</h3>
+      <div class="cards">
+        <button class="card" *ngFor="let t of jogadasTitulos" (click)="irParaSessao(t)">
+          <div class="card-title">{{ t }}</div>
+        </button>
+        <div class="muted" *ngIf="!jogadasTitulos?.length">Nenhuma no momento.</div>
+      </div>
+    </div>
+  </section>
+
+  <app-footer shell-footer
+              [siteName]="'Reinos Perdidos RPG'"
+              [teamName]="'Equipe FSA RPG'"
+              [leftLogoSrc]="'/assets/logo-fsa.png'">
+  </app-footer>
+</app-page-shell>

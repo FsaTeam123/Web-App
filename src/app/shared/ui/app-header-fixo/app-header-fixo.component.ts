@@ -6,14 +6,16 @@ import {
   QueryList,
   ViewChildren,
   ElementRef,
-  Input
+  Input,
+  Inject
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
+import { Observable } from 'rxjs';
+
 import { NavLink, NavChildLink } from '../../models/nav-link.model';
 import { UserSessionService, CurrentUser } from '../../../core/session/user-session.service';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-header-fixo',
@@ -31,29 +33,34 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
 
   @ViewChildren('navItem') navItems!: QueryList<ElementRef<HTMLElement>>;
 
-  openIndex: number | null = null;   // submenu aberto
-  isMobileOpen = false;               // estado do menu mobile
+  openIndex: number | null = null; // submenu aberto
+  isMobileOpen = false;             // estado do menu mobile
 
   user$!: Observable<CurrentUser | null>;
   defaultAvatar = '/assets/perfil-padrao.jpg';
 
   constructor(
     private session: UserSessionService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
+
+  // Helper: estamos no browser?
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.user$ = this.session.user$;
     this.idPerfil = this.session.get()?.idPerfil ?? 0;
 
-    // Monta menu dinamicamente (mantido como estava)
     this.links = [
       { label: 'Home', route: '/inicio', variant: 'ghost' },
       {
-        label: 'Iniciar Seção',
+        label: 'Iniciar Sessão',
         variant: 'primary',
         children: [
-          { label: 'Criar nova seção (mestre)', route: '/mestre-secao/criar', newTab: true },
+          { label: 'Criar nova Sessão (mestre)', route: '/mestre-secao/criar', newTab: true },
           { label: 'Entrar com código', route: '/entrar-secao', newTab: true },
         ]
       },
@@ -65,7 +72,7 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
           { label: 'Como Mestre', route: '/secoes-ativas/mestre', newTab: true },
         ]
       },
-      { label: 'Meu histórico de seção', route: '/historico-secao', variant: 'ghost' },
+      { label: 'Meu histórico de Sessão', route: '/historico-secao', variant: 'ghost' },
       {
         label: 'Conta',
         variant: 'primary',
@@ -86,11 +93,16 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
+    // Aguarda o DOM estar pronto no cliente
     setTimeout(() => this.recalcAlign(), 0);
   }
 
+  // Em SSR, HostListener de window/document não dispara,
+  // mas ainda assim protegemos o corpo com isBrowser.
   @HostListener('window:resize')
   onResize() {
+    if (!this.isBrowser) return;
     this.recalcAlign();
     // se virar desktop, garante que o menu mobile esteja fechado
     if (window.innerWidth >= 680 && this.isMobileOpen) {
@@ -100,6 +112,7 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
 
   @HostListener('document:click')
   closeAll() {
+    if (!this.isBrowser) return;
     this.openIndex = null;
     this.isMobileOpen = false;
   }
@@ -107,15 +120,16 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
   stop(e: Event) { e.stopPropagation(); }
 
   toggle(i: number) {
-    // toggle do submenu (funciona igual no desktop e mobile)
     this.openIndex = this.openIndex === i ? null : i;
   }
 
   toggleMobile() {
+    if (!this.isBrowser) return;
     this.isMobileOpen = !this.isMobileOpen;
   }
 
   closeMobile() {
+    if (!this.isBrowser) return;
     this.isMobileOpen = false;
   }
 
@@ -130,7 +144,6 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
   isActive(index: number): boolean {
     const currentRoute = this.router.url.split('?')[0];
     const linkRoute = this.links[index].route;
-
     if (this.links[index].children) {
       return currentRoute === linkRoute || this.links[index].children!.some(child => currentRoute.includes(child.route));
     }
@@ -150,12 +163,13 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
       this.closeAll();
       this.router.navigate(['/']);
     } else {
-      // fecha menu mobile ao navegar
       this.closeAll();
     }
   }
 
+  // ===== DOM helpers protegidos por isBrowser =====
   private recalcAlign() {
+    if (!this.isBrowser) return;
     const vw = window.innerWidth;
     const items = this.navItems?.toArray() ?? [];
     items.forEach((ref) => {
@@ -168,7 +182,7 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
   }
 
   alignSubmenu(el: HTMLElement | null) {
-    if (!el) return;
+    if (!this.isBrowser || !el) return;
     el.classList.remove('align-right');
     const parent = el.closest('.nav-item') as HTMLElement | null;
     if (!parent) return;

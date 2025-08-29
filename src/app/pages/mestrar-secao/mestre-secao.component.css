@@ -1,0 +1,308 @@
+:host {
+  display: block;
+  color: #f4f4f5;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
+
+  /* variáveis base (desktop) */
+  --container-max: 720px;
+  --container-pad-y: 32px;
+  --container-pad-x: 32px;
+
+  --card-max: 420px;
+  --card-radius: 18px;
+
+  --arrow-size: 44px;
+  --gap: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ===== Caixa do formulário ===== */
+.form-container {
+  width: min(100%, var(--container-max));
+  margin: 48px auto;
+  background: rgba(12,12,16,.85);
+  padding: var(--container-pad-y) var(--container-pad-x);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,.55);
+}
+.form-container--xl { max-width: 900px !important; }
+
+/* Título */
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+.form-container h2 span { color: #e6bd3b; }
+.form-field { margin-bottom: 18px; }
+
+/* Labels + inputs */
+.form-container label { display: block; margin-bottom: 10px; font-weight: 600; font-size: .98rem; }
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: #f4f4f5;
+  font-size: 1rem;
+}
+.form-container input::placeholder { color: #aaa; }
+
+/* Seletor com “seta” custom */
+.select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,.7) 50%),
+    linear-gradient(135deg, rgba(255,255,255,.7) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1.1em), calc(100% - 13px) calc(1.1em);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Radios / checkbox */
+.options-row { display: flex; align-items: center; gap: 20px; margin: 8px 0 14px; }
+.option { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
+.checkbox-line { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; }
+input[type="radio"], input[type="checkbox"] { accent-color: #d4af37; transform: scale(1.05); }
+
+/* ===== Slider / Card ===== */
+.classes-slider{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* o card agora contém as setas */
+.card-scene{
+  position: relative;           /* referência para as setas */
+  width: 100%;
+  max-width: var(--card-max);
+  aspect-ratio: 3 / 4;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.flip-card{
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .6s ease;
+}
+.flip-card.is-flipped{ transform: rotateY(180deg); }
+
+.card-face{
+  position: absolute; inset: 0;
+  border-radius: var(--card-radius);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 8px 20px rgba(0,0,0,.5);
+  overflow: hidden;
+  backface-visibility: hidden;
+  background: rgba(12,12,16,.9);
+  display: grid; place-items: center;
+}
+.card-face.front img{ width: 100%; height: 100%; object-fit: cover; display:block; }
+.placeholder{
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+  color: #bbb;
+  background: linear-gradient(145deg, rgba(30,30,34,.6), rgba(16,16,18,.6));
+}
+
+/* verso com imagem fixa */
+.card-face.back{
+  transform: rotateY(180deg);
+  background: #000 url('/assets/Card.png') center/cover no-repeat;
+}
+
+/* texto sobre o verso */
+.card-back-overlay{
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  text-align: center;
+  padding: 20px 16px;
+  gap: 8px;
+  background: linear-gradient(180deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,0) 45%);
+  color: #f4f4f5;
+}
+.card-title{
+  margin: 75px 0 4px;
+  font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+  font-weight: 800;
+  color: #e6bd3b;
+  text-shadow: 0 2px 6px rgba(0,0,0,.6);
+}
+.card-desc{
+  margin: 0;
+  font-size: clamp(.95rem, 2vw, 1rem);
+  color: #eaeaf0;
+  line-height: 1.35;
+  text-shadow: 0 2px 6px rgba(0,0,0,.5);
+  padding: 0 6px;
+  max-width: 90%;
+  max-height: 55%;
+  overflow: auto;
+}
+
+/* bloco com as linhas de informação no verso */
+.card-meta{
+  width: 100%;
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  padding: 0 6px;
+}
+.meta-line{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 8px;
+  font-size: .98rem;
+  line-height: 1.35;
+  margin: 10px 35px 0;         /* margem pedida: 35px lados */
+}
+.meta-label{ color: #e6bd3b; font-weight: 700; white-space: nowrap; }
+.meta-value{ color: #f4f4f5; overflow-wrap: anywhere; }
+
+/* Setas: sobrepostas ao card para não “alargar” no mobile */
+.arrow{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;                   /* acima da imagem */
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  width: var(--arrow-size);
+  height: var(--arrow-size);
+  border-radius: 50%;
+  background: #d4af37;
+  color: #121212;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 18px rgba(212,175,55,.25);
+}
+.arrow.left  { left: 8px; }
+.arrow.right { right: 8px; }
+
+/* Mobile: aproxima um pouco das bordas */
+@media (max-width: 768px){
+  .arrow.left  { left: 6px; }
+  .arrow.right { right: 6px; }
+}
+@media (max-width: 480px){
+  .arrow.left  { left: 4px; }
+  .arrow.right { right: 4px; }
+}
+.arrow:hover { transform: translateY(-50%) scale(1.03); }
+
+/* Checkbox abaixo do card */
+.select-line{ margin-top: 12px; display: flex; justify-content: center; }
+.select-line input[type="checkbox"]{ accent-color: #d4af37; transform: scale(1.05); }
+
+/* ===== Grid de campos ===== */
+.form-row { display: grid; gap: 16px; }
+.form-row.two-col  { grid-template-columns: 1fr 1fr; align-items: end; }
+.form-row.three-col{ grid-template-columns: 1fr 1fr 1fr; align-items: end; }
+
+/* Campo quantidade mais compacto */
+.form-field--qtd .form-input { max-width: 220px; margin: 0 auto; }
+
+/* Título host centralizado + radios centralizados */
+.form-field--host > label { text-align: center; width: 100%; margin-bottom: 10px; }
+.form-field--host .options-row { justify-content: center; gap: 18px; }
+
+/* CTA */
+.cta-line { margin-top: 22px; display: flex; justify-content: center; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding: 12px 16px; border-radius: 14px; border: 1px solid transparent;
+  font-weight: 700; color: #121212;
+  background:#d4af37; border-color:#c29b2e; box-shadow:0 6px 18px rgba(212,175,55,.2);
+  transition: transform .12s, background-color .12s, border-color .12s;
+}
+.btn:hover { transform: translateY(-1px); background:#e6bd3b; border-color:#e6bd3b; }
+
+/* alerts */
+.alert { margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; font-weight: 600; text-align: center; }
+.alert.ok  { background: rgba(46,160,67,.15);  color:#97e9a6; border:1px solid rgba(46,160,67,.35); }
+.alert.err { background: rgba(255,69,58,.15); color:#ff9a8f; border:1px solid rgba(255,69,58,.35); }
+
+.form-field--senha { margin-top: 10px; }
+
+/* ====== RESPONSIVIDADE ====== */
+
+/* Tablet */
+@media (max-width: 1024px){
+  :host{
+    --container-max: 640px;
+    --card-max: 380px;
+    --arrow-size: 40px;
+  }
+  .form-container { margin: 40px auto; }
+  .form-container h2 { font-size: 1.7rem; }
+}
+
+/* Mobile grande */
+@media (max-width: 768px){
+  :host{
+    --container-max: 94vw;
+    --container-pad-x: 20px;
+    --card-max: 92vw;       /* carta ocupa boa parte da tela */
+    --arrow-size: 40px;
+  }
+
+  .form-container {
+    width: min(100%, var(--container-max));
+    padding: 20px clamp(14px, 3vw, 20px);
+    margin: 28px auto;
+    /* safe area iOS */
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+
+  /* Empilha tudo em 1 coluna */
+  .form-row.two-col,
+  .form-row.three-col { grid-template-columns: 1fr; }
+
+  /* Botão ocupa largura toda */
+  .cta-line .btn { width: 100%; }
+
+  /* Setas mais para dentro no mobile */
+  .arrow.left  { left: -6px; }
+  .arrow.right { right: -6px; }
+
+  /* Texto do verso um pouco menor */
+  .card-title { margin-top: 48px; font-size: 1.15rem; }
+  .card-desc  { font-size: .98rem; }
+  .meta-line  { margin: 8px 20px 0; }  /* afunila um pouco a margem lateral */
+}
+
+/* Mobile pequeno */
+@media (max-width: 480px){
+  :host{ --arrow-size: 36px; --card-radius: 16px; }
+
+  /* Afinar título e paddings */
+  .form-container h2 { font-size: 1.5rem; }
+
+  /* Melhor legibilidade dos campos */
+  .form-input { padding: 10px 12px; font-size: .98rem; }
+
+  /* Setas sobrepostas com menos deslocamento */
+  .arrow.left  { left: -4px; }
+  .arrow.right { right: -4px; }
+
+  /* Metas em coluna e centralizadas */
+  .card-meta { text-align: center; margin: 10px 14px 0; }
+  .meta-line { grid-template-columns: 1fr; justify-items: center; margin: 8px 0 0; }
+
+  /* Espaços um pouco menores */
+  .options-row { gap: 14px; }
+  .card-back-overlay { padding: 14px; }
+  .card-title { margin-top: 35px; }
+}

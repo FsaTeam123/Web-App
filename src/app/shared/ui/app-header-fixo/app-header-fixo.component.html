@@ -56,12 +56,12 @@
 
         <!-- link simples -->
         <ng-template #simpleLink>
-          <a [routerLink]="link.route"
+          <button [routerLink]="link.route"
              class="btn"
              [ngClass]="{'btn-primary': isActive(i),'btn-ghost': !isActive(i)}"
              (click)="closeAll()">
             {{ link.label }}
-          </a>
+          </button>
         </ng-template>
       </ng-container>
     </nav>

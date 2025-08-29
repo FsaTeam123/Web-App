@@ -56,7 +56,7 @@ export class PerfilComponent implements OnInit {
   links: NavLink[] = [
     { label: 'Home', route: '/inicio', variant: 'ghost' },
     { label: 'Minhas seções ativas', route: '/secoes-ativas', variant: 'ghost' },
-    { label: 'Meu histórico de seção', route: '/historico-secao', variant: 'ghost' },
+    { label: 'Meu histórico de Sessão', route: '/historico-secao', variant: 'ghost' },
     { label: 'Conta', route: '/conta/perfil', variant: 'primary' },
     { label: 'Sair', variant: 'ghost', children: [{ label: 'Deslogar', route: '/conta/deslogar', newTab: false }] }
   ];
