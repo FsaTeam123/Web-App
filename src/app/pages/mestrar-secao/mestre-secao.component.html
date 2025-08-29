@@ -1,0 +1,124 @@
+<app-page-shell [useAltBackground]="true">
+  <app-header-fixo shell-header
+                   [siteName]="'Reinos Perdidos RPG'"
+                   [logoSrc]="'/assets/logo-rpg.png'">
+  </app-header-fixo>
+
+  <section class="form-container form-container--xl">
+    <h2>Mestrar <span>Sessão</span></h2>
+
+    <div class="form-field">
+      <label for="titulo">Título:</label>
+      <input id="titulo"
+             type="text"
+             class="form-input"
+             [(ngModel)]="titulo"
+             maxlength="30"
+             placeholder="Digite o título da sessão">
+    </div>
+
+    <!-- Linha com 2 colunas: Qtd + Host -->
+    <div class="form-row two-col">
+        <!-- Quantidade -->
+        <div class="form-field form-field--qtd">
+            <label for="qtd">Quantidade de pessoas:</label>
+            <input id="qtd"
+                type="number"
+                class="form-input"
+                [(ngModel)]="qtdPessoas"
+                min="1">
+        </div>
+
+        <!-- Host -->
+        <div class="form-field form-field--host">
+            <label for="tipo-host">Tipo de Host:</label>
+            <div class="options-row">
+            <label class="option">
+                <input type="radio" name="pubPriv" value="publico" [(ngModel)]="publicoPrivado">
+                Público
+            </label>
+            <label class="option">
+                <input type="radio" name="pubPriv" value="privado" [(ngModel)]="publicoPrivado">
+                Privado
+            </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-field">
+      <label class="checkbox-line">
+        <input type="checkbox" [(ngModel)]="classesEspecificas">
+        Classes específicas
+      </label>
+    </div>
+
+    <!-- SLIDER + FLIP CARD -->
+    <div class="classes-slider" *ngIf="classesEspecificas && (classes?.length || 0) > 0">
+      <button class="arrow left" (click)="prev()">&#10094;</button>
+
+      <!-- Cena 3D: clica para virar -->
+      <div class="card-scene" (click)="toggleFlip()">
+        <div class="flip-card" [class.is-flipped]="isFlipped()">
+          <!-- Frente: imagem da classe vinda da API -->
+          <div class="card-face front">
+            <img *ngIf="current?.imagemBase64"
+                 [src]="'data:' + (current?.imagemContentType || 'image/png') + ';base64,' + current?.imagemBase64"
+                 [alt]="current?.nome || 'Classe'">
+            <div *ngIf="!current?.imagemBase64" class="placeholder">
+              <span>Sem imagem</span>
+            </div>
+          </div>
+
+          <!-- Verso: imagem fixa do baralho + texto por cima -->
+          <div class="card-face back">
+            <div class="card-back-overlay">
+              <h3 class="card-title">{{ current?.nome }}</h3>
+              <p class="card-desc">{{ current?.descricao }}</p>
+              <div class="card-meta">
+                <div class="meta-line">
+                    <span class="meta-label">Pontos de vida inicial:</span>
+                    <span class="meta-value">{{ currentPvInitLabel }}</span>
+                </div>
+                <div class="meta-line">
+                    <span class="meta-label">Pontos de vida por nível:</span>
+                    <span class="meta-value">{{ currentPvNivelLabel }}</span>
+                </div>
+                <div class="meta-line">
+                    <span class="meta-label">Pontos de mana por nível:</span>
+                    <span class="meta-value">{{ currentPmNivelLabel }}</span>
+                </div>
+                <div class="meta-line">
+                    <span class="meta-label">Proeficiências:</span>
+                    <span class="meta-value">{{ currentProeficienciasText }}</span>
+                </div>
+
+                <div class="meta-line">
+                    <span class="meta-label">Perícias:</span>
+                    <span class="meta-value">{{ currentPericiasText }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="arrow right" (click)="next()">&#10095;</button>
+    </div>
+
+    <!-- Checkbox de seleção abaixo do card -->
+    <div class="select-line" *ngIf="classesEspecificas && current">
+      <label>
+        <input type="checkbox"
+            [checked]="selectedIds.has(current.idClasse)"
+            (change)="toggleSelect(current.idClasse, $any($event.target).checked)">
+        Selecionar esta classe
+      </label>
+    </div>
+  </section>
+
+  <app-footer shell-footer
+              [siteName]="'Reinos Perdidos RPG'"
+              [teamName]="'Equipe FSA RPG'"
+              [leftLogoSrc]="'/assets/logo-fsa.png'">
+  </app-footer>
+</app-page-shell>

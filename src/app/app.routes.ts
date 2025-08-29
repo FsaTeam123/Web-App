@@ -12,5 +12,6 @@ export const routes: Routes = [
   { path: 'esqueci-senha', component: EsqueciSenhaComponent },
   { path: 'inicio', component: InicioComponent }, 
   { path: 'conta/perfil', loadComponent: () => import('./pages/perfil/perfil.component').then(m => m.PerfilComponent) },
-  { path: '**', redirectTo: '' }
+  { path: 'mestre-secao', loadComponent: () => import('./pages/mestrar-secao/mestre-secao.component').then(m => m.MestreSecaoComponent) },
+  { path: '**', redirectTo: '' },
 ];

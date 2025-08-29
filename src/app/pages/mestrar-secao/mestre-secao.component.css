@@ -1,0 +1,326 @@
+:host {
+  display: block;
+  color: #f4f4f5;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
+
+  /* ▶ variáveis para ajustar tamanhos com facilidade */
+  --container-max: 720px; /* antes ~420px */
+  --container-pad-y: 32px;
+  --container-pad-x: 32px;
+
+  --card-max: 420px;      /* antes 320px */
+  --card-radius: 18px;
+
+  --arrow-size: 44px;     /* antes 36px */
+  --gap: 16px;
+}
+
+/* garante que largura considere padding/borda (evita estourar o card) */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Caixa do formulário (MAIOR) */
+.form-container {
+  max-width: var(--container-max);
+  margin: 48px auto;
+  background: rgba(12,12,16,.85);
+  padding: var(--container-pad-y) var(--container-pad-x);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,.55);
+}
+
+/* força o card maior independentemente de regras globais */
+.form-container--xl {
+  max-width: 900px !important;   /* ajuste o valor que quiser */
+  width: 100%;
+}
+
+/* Título */
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 1.8rem; /* leve aumento */
+  font-weight: 800;
+}
+.form-container h2 span { color: #e6bd3b; }
+.form-field { margin-bottom: 18px; }
+
+/* Labels */
+.form-container label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: .98rem;
+}
+
+.form-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 14px; /* mais confortável */
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: #f4f4f5;
+  font-size: 1rem;
+}
+.form-container input::placeholder { color: #aaa; }
+
+/* Radios / checkbox */
+.options-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 8px 0 14px;
+  justify-content: flex-start;
+}
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.checkbox-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #d4af37;
+  transform: scale(1.05);
+}
+
+/* Slider */
+.classes-slider{
+  display:flex; align-items:center; justify-content:center;
+  gap: var(--gap);
+  margin-top: 16px;
+}
+
+/* cena/flip (CARTA MAIOR) */
+.card-scene{
+  width: 100%;
+  max-width: var(--card-max);
+  aspect-ratio: 3 / 4;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.flip-card{
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .6s ease;
+}
+.flip-card.is-flipped{ transform: rotateY(180deg); }
+
+.card-face{
+  position: absolute; inset: 0;
+  border-radius: var(--card-radius);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 8px 20px rgba(0,0,0,.5);
+  overflow: hidden;
+  backface-visibility: hidden;
+  background: rgba(12,12,16,.9);
+  display: grid; place-items: center;
+}
+.card-face.front img{
+  width: 100%; height: 100%; object-fit: cover; display:block;
+}
+.placeholder{
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+  color: #bbb;
+  background: linear-gradient(145deg, rgba(30,30,34,.6), rgba(16,16,18,.6));
+}
+
+/* verso com imagem fixa */
+.card-face.back{
+  transform: rotateY(180deg);
+  background: #000 url('/assets/Card.png') center/cover no-repeat;
+}
+
+/* texto sobre o verso */
+.card-back-overlay{
+  position: absolute; inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;       /* centraliza horizontal */
+  justify-content: flex-start; /* fixa no topo */
+  text-align: center;
+  padding: 20px 16px;
+  gap: 8px;                  /* espaço entre nome e descrição */
+  /* gradiente de cima para baixo pra dar contraste no topo */
+  background: linear-gradient(180deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,0) 45%);
+  color: #f4f4f5;
+}
+.card-title{
+  margin: 75px 0 4px;        /* margem superior visível */
+  font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+  font-weight: 800;
+  color: #e6bd3b;
+  text-shadow: 0 2px 6px rgba(0,0,0,.6);
+}
+.card-desc{
+  margin: 0;
+  font-size: clamp(.95rem, 2vw, 1rem);
+  color: #eaeaf0;
+  line-height: 1.35;
+  text-shadow: 0 2px 6px rgba(0,0,0,.5);
+  padding: 0 6px;            /* respiro lateral */
+  max-width: 90%;
+  /* evita estourar vertical em descrições longas, mas mantém rolável se precisar */
+  max-height: 55%;
+  overflow: auto;
+}
+
+/* checkbox de seleção abaixo do card */
+.select-line{
+  margin-top: 12px;
+  display: flex; justify-content: center;
+}
+.select-line input[type="checkbox"]{ accent-color: #d4af37; transform: scale(1.05); }
+
+/* Setas MAIORES */
+.arrow{
+  border: none; cursor: pointer; font-weight:700;
+  width: var(--arrow-size); height: var(--arrow-size);
+  border-radius: 50%;
+  background: #d4af37; color:#121212;
+  display: grid; place-items: center;
+  transition: transform .12s;
+}
+.arrow:hover { transform: translateY(-1px); }
+
+/* bloco com as linhas de informação no verso */
+.card-meta{
+  width: 100%;
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  text-align: left;           /* alinha os pares label/valor */
+  padding: 0 6px;
+}
+
+.meta-line{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 8px;
+  font-size: .98rem;
+  line-height: 1.35;
+  margin: 10px 35px 0;
+}
+
+.meta-label{
+  color: #e6bd3b;             /* dourado da sua paleta */
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.meta-value{
+  color: #f4f4f5;
+  overflow-wrap: anywhere;    /* evita estourar com listas longas */
+}
+
+/* =========================
+   RESPONSIVIDADE
+   ========================= */
+
+/* Tablet */
+@media (max-width: 1024px){
+  :host{
+    --container-max: 640px;
+    --card-max: 380px;
+    --arrow-size: 40px;
+  }
+  .form-container { margin: 40px auto; }
+  .form-container h2 { font-size: 1.7rem; }
+}
+
+/* Mobile grande */
+@media (max-width: 768px){
+  :host{
+    --container-max: 92vw;
+    --container-pad-x: 20px;
+    --card-max: 88vw;     /* carta ocupa boa parte da tela */
+    --arrow-size: 38px;
+  }
+  .classes-slider{
+    gap: 12px;
+  }
+  .card-back-overlay { padding: 16px; }
+  .card-title { font-size: 1.15rem; }
+  .card-desc  { font-size: .98rem; }
+}
+
+/* Centraliza o título "Tipo de Host:" */
+.form-field--host > label {
+  text-align: center;
+  width: 100%;
+  display: block;
+  margin-bottom: 10px; /* dá um respiro antes dos radios */
+}
+
+/* Centraliza os radios logo abaixo do label */
+.form-field--host .options-row {
+  justify-content: center;  /* << aqui é a chave */
+  gap: 18px;                /* ajuste fino do espaço entre Público/Privado */
+}
+
+.form-row { display: grid; gap: 16px; }
+
+/* 2 colunas no tablet/desktop, empilha no mobile */
+@media (min-width: 680px) {
+  .form-row.two-col {
+    grid-template-columns: 1fr 1fr;
+    align-items: end; /* alinha o input numérico com os radios */
+  }
+}
+
+/* Deixa o input de quantidade compacto e centralizado na coluna */
+.form-field--qtd .form-input {
+  max-width: 220px;
+  margin: 0 auto; /* centraliza dentro da meia-coluna */
+}
+
+/* Centraliza o título "Tipo de Host" e os radios logo abaixo */
+.form-field--host > label {
+  text-align: center;
+  width: 100%;
+  display: block;
+  margin-bottom: 10px;
+}
+.form-field--host .options-row {
+  justify-content: center;
+  gap: 18px;
+}
+
+
+/* Mobile pequeno */
+@media (max-width: 480px){
+  :host{
+    --arrow-size: 34px;
+    --card-radius: 16px;
+  }
+  .form-container{
+    padding: 20px;
+    margin: 28px auto;
+  }
+  .form-container h2 { font-size: 1.5rem; }
+  .form-input { padding: 10px 12px; font-size: .98rem; }
+  .options-row { gap: 14px; }
+  .card-back-overlay { padding: 14px; }
+  .card-title { margin-top: 35px; }
+  .form-field--host .options-row {
+    gap: 14px;
+  }
+  .form-field--host .options-row { gap: 14px; }
+  .card-meta { text-align: center;
+                margin: 10px 20px 0; }
+  .meta-line{
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
