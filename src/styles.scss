@@ -59,3 +59,31 @@ header.nav {
 .submenu {
   z-index: 3000;         /* maior que header.nav */
 }
+
+/* Select fechado (trigger) continua claro no tema escuro */
+.form-input.select {
+  color: #f4f4f5;
+}
+
+/* Menu aberto (itens <option>): texto escuro em fundo claro (Chromium/Win) */
+.form-input.select option {
+  color: #0f1115;           /* bem escuro p/ contraste */
+  background-color: #fff;   /* muitos navegadores respeitam */
+  font-weight: 600;         /* opcional, aumenta legibilidade */
+}
+
+/* Placeholder/option desabilitado (se usar um “Selecione…”) */
+.form-input.select option[disabled],
+.form-input.select option[aria-disabled="true"],
+.form-input.select option[value=""] {
+  color: #9aa0a6;
+  font-weight: 500;
+}
+
+/* Destaque do item selecionado/hover (fallback se o SO permitir) */
+.form-input.select option:checked,
+.form-input.select option:focus,
+.form-input.select option:hover {
+  color: #fff;
+  background-color: #2563eb;
+}

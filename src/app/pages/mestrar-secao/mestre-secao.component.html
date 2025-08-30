@@ -41,12 +41,6 @@
             Privado
           </label>
         </div>
-
-        <!-- senha somente se Privado -->
-        <div *ngIf="publicoPrivado === 'privado'" class="form-field form-field--senha">
-          <label for="senha">Senha da sessão:</label>
-          <input id="senha" type="password" class="form-input" [(ngModel)]="senha" placeholder="Defina uma senha">
-        </div>
       </div>
 
       <!-- Nível inicial -->
@@ -95,6 +89,18 @@
           <option *ngFor="let t of temas" [ngValue]="t.idTema">{{ t.nome }}</option>
         </select>
       </div>
+    </div>
+
+    <div *ngIf="publicoPrivado === 'privado'" class="form-field form-field--senha form-field--senha-outside">
+      <label for="senha" class="senha-label">Senha da sessão</label>
+      <input
+        id="senha"
+        type="password"
+        class="form-input senha-input"
+        [(ngModel)]="senha"
+        placeholder="Defina uma senha"
+        autocomplete="new-password"
+      >
     </div>
 
     <div class="form-field">

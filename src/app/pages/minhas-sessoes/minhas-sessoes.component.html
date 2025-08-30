@@ -14,7 +14,9 @@
       <h3>Mestradas</h3>
       <div class="cards">
         <button class="card" *ngFor="let j of mestradas" (click)="irParaSessao(j)">
+          <span class="card-id">#{{ j?.idJogo || j?.id }}</span>
           <div class="card-title">{{ j?.titulo }}</div>
+          <div class="card-subtitle" *ngIf="infoLinha(j)">{{ infoLinha(j) }}</div>
         </button>
         <div class="muted" *ngIf="!mestradas?.length">Nenhuma no momento.</div>
       </div>
@@ -36,4 +38,4 @@
               [teamName]="'Equipe FSA RPG'"
               [leftLogoSrc]="'/assets/logo-fsa.png'">
   </app-footer>
-</app-page-shell>
+</app-page-shell> 

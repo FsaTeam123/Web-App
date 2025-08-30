@@ -13,5 +13,6 @@ export const routes: Routes = [
   { path: 'inicio', component: InicioComponent }, 
   { path: 'conta/perfil', loadComponent: () => import('./pages/perfil/perfil.component').then(m => m.PerfilComponent) },
   { path: 'mestre-secao', loadComponent: () => import('./pages/mestrar-secao/mestre-secao.component').then(m => m.MestreSecaoComponent) },
+  { path: 'minhas-sessoes', loadComponent: () => import('./pages/minhas-sessoes/minhas-sessoes.component').then(m => m.MinhasSessoesComponent) },
   { path: '**', redirectTo: '' },
 ];
