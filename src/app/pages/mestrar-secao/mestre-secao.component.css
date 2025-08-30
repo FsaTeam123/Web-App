@@ -233,7 +233,25 @@ input[type="radio"], input[type="checkbox"] { accent-color: #d4af37; transform: 
 .alert.ok  { background: rgba(46,160,67,.15);  color:#97e9a6; border:1px solid rgba(46,160,67,.35); }
 .alert.err { background: rgba(255,69,58,.15); color:#ff9a8f; border:1px solid rgba(255,69,58,.35); }
 
-.form-field--senha { margin-top: 10px; }
+/* Centraliza o bloco de senha e limita a largura pra desktop */
+.form-field--senha-outside {
+  max-width: 420px;
+  margin: 12px auto 8px; /* centraliza */
+  text-align: center;
+}
+
+/* Centraliza o texto dentro do input (opcional, mas fica bonito) */
+.form-field--senha-outside .senha-input {
+  text-align: center;
+}
+
+/* Label um pouco mais forte e com espaçamento consistente */
+.senha-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
 
 /* ====== RESPONSIVIDADE ====== */
 
@@ -248,61 +266,68 @@ input[type="radio"], input[type="checkbox"] { accent-color: #d4af37; transform: 
   .form-container h2 { font-size: 1.7rem; }
 }
 
-/* Mobile grande */
+/* ===== Mobile (até 768px) — fonte e espaçamentos menores no verso ===== */
 @media (max-width: 768px){
-  :host{
-    --container-max: 94vw;
-    --container-pad-x: 20px;
-    --card-max: 92vw;       /* carta ocupa boa parte da tela */
-    --arrow-size: 40px;
+  .card-back-overlay {
+    padding: 12px 10px;
   }
 
-  .form-container {
-    width: min(100%, var(--container-max));
-    padding: 20px clamp(14px, 3vw, 20px);
-    margin: 28px auto;
-    /* safe area iOS */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
+  .card-title {
+    margin-top: 44px;      /* menos espaço no topo */
+    font-size: 1.05rem;    /* menor que o desktop */
   }
 
-  /* Empilha tudo em 1 coluna */
-  .form-row.two-col,
-  .form-row.three-col { grid-template-columns: 1fr; }
+  .card-desc {
+    font-size: .9rem;      /* menor */
+    line-height: 1.25;     /* menos espaçamento entre linhas */
+    max-height: 48%;       /* evita estourar o card */
+  }
 
-  /* Botão ocupa largura toda */
-  .cta-line .btn { width: 100%; }
+  .card-meta {
+    gap: 6px;              /* menos espaço entre blocos */
+    margin-top: 8px;
+    padding: 0 4px;
+  }
 
-  /* Setas mais para dentro no mobile */
-  .arrow.left  { left: -6px; }
-  .arrow.right { right: -6px; }
+  .meta-line {
+    gap: 6px;              /* menos espaço entre label/valor */
+    margin: 6px 14px 0;    /* margens mais enxutas */
+    font-size: .9rem;      /* menor */
+    line-height: 1.25;     /* linhas mais “juntas” */
+  }
 
-  /* Texto do verso um pouco menor */
-  .card-title { margin-top: 48px; font-size: 1.15rem; }
-  .card-desc  { font-size: .98rem; }
-  .meta-line  { margin: 8px 20px 0; }  /* afunila um pouco a margem lateral */
+  .meta-label { font-size: .9rem; }
+  .meta-value { font-size: .92rem; }
 }
 
-/* Mobile pequeno */
+/* ===== Mobile pequeno (até 480px) — ainda mais compacto ===== */
 @media (max-width: 480px){
-  :host{ --arrow-size: 36px; --card-radius: 16px; }
+  .card-back-overlay { padding: 10px 8px; }
 
-  /* Afinar título e paddings */
-  .form-container h2 { font-size: 1.5rem; }
+  .card-title {
+    margin-top: 36px;
+    font-size: 1rem;
+  }
 
-  /* Melhor legibilidade dos campos */
-  .form-input { padding: 10px 12px; font-size: .98rem; }
+  .card-desc {
+    font-size: .86rem;
+    line-height: 1.2;
+    max-height: 46%;
+  }
 
-  /* Setas sobrepostas com menos deslocamento */
-  .arrow.left  { left: -4px; }
-  .arrow.right { right: -4px; }
+  .card-meta {
+    gap: 4px;
+    margin-top: 6px;
+    padding: 0 2px;
+  }
 
-  /* Metas em coluna e centralizadas */
-  .card-meta { text-align: center; margin: 10px 14px 0; }
-  .meta-line { grid-template-columns: 1fr; justify-items: center; margin: 8px 0 0; }
+  .meta-line {
+    margin: 4px 28px 0;
+    gap: 4px;
+    font-size: .88rem;
+    line-height: 1.2;
+  }
 
-  /* Espaços um pouco menores */
-  .options-row { gap: 14px; }
-  .card-back-overlay { padding: 14px; }
-  .card-title { margin-top: 35px; }
+  .meta-label { font-size: .88rem; }
+  .meta-value { font-size: .88rem; }
 }

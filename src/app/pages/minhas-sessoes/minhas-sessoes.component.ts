@@ -34,7 +34,7 @@ export class MinhasSessoesComponent implements OnInit {
     this.http.get<any[]>(API_ENDPOINTS.jogosPorMestre(userId)).subscribe({
       next: (r) => this.mestradas = r ?? [],
       error: () => {},
-    });
+    }); 
 
     this.http.get<string[]>(API_ENDPOINTS.jogosPorJogador(userId)).subscribe({
       next: (r) => this.jogadasTitulos = r ?? [],
@@ -46,5 +46,18 @@ export class MinhasSessoesComponent implements OnInit {
   irParaSessao(item: any){
     // por enquanto só navega — você pode passar query params se precisar
     this.router.navigate(['/inicio-sessao']);
+  }
+
+  infoLinha(j: any): string {
+    const parts = [
+      j?.tipoJogo?.nome,
+      j?.geracaoMundo?.nome,
+      j?.estiloCampanha?.nome,
+      j?.historia?.nome,
+      j?.tema?.nome,
+    ]
+    .map(v => (typeof v === 'string' ? v.trim() : v))
+    .filter(Boolean);
+    return parts.join(' - ');
   }
 }

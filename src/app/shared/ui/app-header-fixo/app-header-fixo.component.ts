@@ -60,18 +60,11 @@ export class AppHeaderComponentFix implements OnInit, AfterViewInit {
         label: 'Iniciar Sessão',
         variant: 'primary',
         children: [
-          { label: 'Criar nova Sessão (mestre)', route: '/mestre-secao/criar', newTab: true },
+          { label: 'Criar nova Sessão (mestre)', route: '/mestre-secao', newTab: true },
           { label: 'Entrar com código', route: '/entrar-secao', newTab: true },
         ]
       },
-      {
-        label: 'Minhas seções ativas',
-        variant: 'primary',
-        children: [
-          { label: 'Como Jogador', route: '/secoes-ativas/jogador', newTab: true },
-          { label: 'Como Mestre', route: '/secoes-ativas/mestre', newTab: true },
-        ]
-      },
+      { label: 'Minhas seções ativas', route: '/minhas-sessoes', variant: 'ghost' },
       { label: 'Meu histórico de Sessão', route: '/historico-secao', variant: 'ghost' },
       {
         label: 'Conta',
