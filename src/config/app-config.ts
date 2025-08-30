@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://t7tsd4gbsd.execute-api.sa-east-1.amazonaws.com'; // Base URL for the API
+export const API_BASE_URL = 'http://localhost:8085'; // Base URL for the API
 
 export const API_ENDPOINTS = {
   sexos: `${API_BASE_URL}/sexos`,

@@ -1,0 +1,87 @@
+<section class="session-root">
+  <!-- Header da sessão (substitui o header fixo nessa página) -->
+  <header class="session-header" #hdr>
+    <div class="session-info" *ngIf="jogo">
+      <span class="badge">#{{ jogo?.idJogo || jogo?.id }}</span>
+      <strong class="title">{{ jogo?.titulo || 'Sessão' }}</strong>
+    </div>
+
+    <nav class="session-nav" aria-label="Navegação da sessão">
+        <!-- HOME -->
+        <button class="nav-btn" [class.active]="activeTab==='home'" (click)="go('home')" title="Home">
+            <!-- casinha -->
+            <svg viewBox="0 0 24 24" class="ico">
+            <path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5z"/>
+            </svg>
+            <span class="nav-label">Home</span>
+        </button>
+
+        <!-- (antigo Lobby) agora MESA -->
+        <button class="nav-btn" [class.active]="activeTab==='lobby'" (click)="go('lobby')" title="Mesa">
+            <!-- ícone estilo “grid”/quadro, para diferenciar da casinha -->
+            <svg viewBox="0 0 24 24" class="ico">
+            <path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/>
+            </svg>
+            <span class="nav-label">Mesa</span>
+        </button>
+
+        <button class="nav-btn" [class.active]="activeTab==='personagens'" (click)="go('personagens')" title="Personagens">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M16 11a4 4 0 1 0-3.999-4A4 4 0 0 0 16 11zM8 13a4 4 0 1 0-3.999-4A4 4 0 0 0 8 13zm8 2c-3.314 0-6 2.014-6 4.5V22h12v-2.5c0-2.486-2.686-4.5-6-4.5zm-8 0C4.686 15 2 17.014 2 19.5V22h8v-2.5C10 17.014 7.314 15 4 15z"/></svg>
+            <span class="nav-label">Personagens</span>
+        </button>
+
+        <button class="nav-btn" [class.active]="activeTab==='mapas'" (click)="go('mapas')" title="Mapas">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M15 6l-6 2-5-2v14l6 2 6-2 5 2V8l-6-2zm0 2.2l4 1.6v10l-4-1.6V8.2zM9 8.2l6-2.2v10.8l-6 2.2V8.2zM4 7.2l4 1.6v10.8l-4-1.6V7.2z"/></svg>
+            <span class="nav-label">Mapas</span>
+        </button>
+
+        <button class="nav-btn" [class.active]="activeTab==='anotacoes'" (click)="go('anotacoes')" title="Anotações">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5"/></svg>
+            <span class="nav-label">Anotações</span>
+        </button>
+
+        <button class="nav-btn" [class.active]="activeTab==='chat'" (click)="go('chat')" title="Chat">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M21 6a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h6l5 4v-4h1a3 3 0 0 0 3-3V6z"/></svg>
+            <span class="nav-label">Chat</span>
+        </button>
+    </nav>
+  </header>
+
+  <!-- Canvas + UI -->
+  <div class="canvas-wrap">
+    <canvas #gridCanvas class="grid-canvas"></canvas>
+
+    <!-- Zoom -->
+    <div class="zoom-panel">
+      <button class="zbtn" (click)="zoomOut()" aria-label="Diminuir zoom">−</button>
+      <input type="range" min="20" max="400" [(ngModel)]="zoomPercent" />
+      <button class="zbtn" (click)="zoomIn()" aria-label="Aumentar zoom">+</button>
+      <span class="zread">{{ zoomPercent }}%</span>
+      <button class="zreset" (click)="zoomReset()">Reset</button>
+    </div>
+
+    <!-- Ferramentas de desenho -->
+    <div class="draw-panel">
+      <div class="row">
+        <button class="tbtn" [class.active]="tool==='pencil'"  (click)="tool='pencil'">✏️</button>
+        <button class="tbtn" [class.active]="tool==='eraser'"  (click)="tool='eraser'">🩹</button>
+        <button class="tbtn" [class.active]="tool==='rect'"    (click)="tool='rect'">▭</button>
+        <button class="tbtn" [class.active]="tool==='ellipse'" (click)="tool='ellipse'">◯</button>
+      </div>
+      <div class="row">
+        <input type="color" [(ngModel)]="color" [disabled]="tool==='eraser'">
+      </div>
+      <div class="row">
+        <label class="mini">Px</label>
+        <input type="range" min="1" max="32" [(ngModel)]="stroke">
+        <span class="mini">{{ stroke }}</span>
+      </div>
+      <div class="row">
+        <button class="tbtn" (click)="undo()" title="Desfazer">↶</button>
+        <button class="tbtn" (click)="redo()" title="Refazer">↷</button>
+        <button class="tbtn danger" (click)="clearArt()" title="Limpar">🗑️</button>
+      </div>
+      <div class="hint">Pan: Ctrl/🖱️ meio • Zoom: Scroll/Pinch • Desenho: botão esquerdo</div>
+    </div>
+  </div>
+</section>
