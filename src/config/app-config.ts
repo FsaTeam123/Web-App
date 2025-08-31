@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8085'; // REST base
+export const API_BASE_URL = 'https://t7tsd4gbsd.execute-api.sa-east-1.amazonaws.com'; // REST base
 
 // REST endpoints
 export const API_ENDPOINTS = {
