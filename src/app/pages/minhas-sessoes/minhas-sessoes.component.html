@@ -25,10 +25,13 @@
     <div class="block">
       <h3>Jogadas</h3>
       <div class="cards">
-        <button class="card" *ngFor="let t of jogadasTitulos" (click)="irParaSessao(t)">
-          <div class="card-title">{{ t }}</div>
+        <!-- antes iterava string; agora itera objetos de jogo -->
+        <button class="card" *ngFor="let j of jogadas" (click)="irParaSessao(j)">
+          <span class="card-id">#{{ j?.idJogo || j?.id }}</span>
+          <div class="card-title">{{ j?.titulo }}</div>
+          <div class="card-subtitle" *ngIf="infoLinha(j)">{{ infoLinha(j) }}</div>
         </button>
-        <div class="muted" *ngIf="!jogadasTitulos?.length">Nenhuma no momento.</div>
+        <div class="muted" *ngIf="!jogadas?.length">Nenhuma no momento.</div>
       </div>
     </div>
   </section>

@@ -1,0 +1,243 @@
+<app-page-shell [useAltBackground]="useAltBackground">
+  <app-header-fixo shell-header
+                   [siteName]="siteName"
+                   [logoSrc]="'/assets/logo-rpg.png'">
+  </app-header-fixo>
+
+  <section class="wrap">
+    <h2>Entrar em <span>Sessão</span></h2>
+
+    <!-- Barra de busca + botão de filtro -->
+    <div class="searchbar">
+      <div class="search-input">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input #search
+                type="search"
+                name="session-search"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                [value]="searchTerm"
+                (input)="onSearchTermChange(search.value)"
+                placeholder="Pesquisar por título ou #id (ex: #24)" />
+      </div>
+
+      <button class="icon-btn filter-btn" (click)="toggleFilters()" aria-label="Filtros">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v2H3zm4 6h10v2H7zm3 6h4v2h-4z"/></svg>
+        <span class="sr-only">Filtrar</span>
+      </button>
+    </div>
+
+    <!-- Painel de filtros avançados -->
+    <div class="filters-panel" *ngIf="showFilters">
+      <div class="field">
+        <label>Geração do Mundo</label>
+        <select #gSel [value]="filtroGeracao"
+                (change)="onFiltroGeracaoChange(gSel.value)">
+            <option value="todos">Todos</option>
+            <option *ngFor="let o of opGeracao" [value]="o">{{ o }}</option>
+        </select>
+        </div>
+
+        <div class="field">
+        <label>Estilo de Campanha</label>
+        <select #eSel [value]="filtroEstilo"
+                (change)="onFiltroEstiloChange(eSel.value)">
+            <option value="todos">Todos</option>
+            <option *ngFor="let o of opEstilo" [value]="o">{{ o }}</option>
+        </select>
+        </div>
+
+        <div class="field">
+        <label>História</label>
+        <select #hSel [value]="filtroHistoria"
+                (change)="onFiltroHistoriaChange(hSel.value)">
+            <option value="todos">Todos</option>
+            <option *ngFor="let o of opHistoria" [value]="o">{{ o }}</option>
+        </select>
+        </div>
+
+        <div class="field">
+        <label>Tema</label>
+        <select #tSel [value]="filtroTema"
+                (change)="onFiltroTemaChange(tSel.value)">
+            <option value="todos">Todos</option>
+            <option *ngFor="let o of opTema" [value]="o">{{ o }}</option>
+        </select>
+        </div>
+
+        <div class="field">
+        <label>Tipo</label>
+        <select #tipoSel [value]="filtroTipo"
+                (change)="onTipoSelectChange(tipoSel.value)">
+            <option value="todos">Todos</option>
+            <option value="publico">Público</option>
+            <option value="privado">Privado</option>
+        </select>
+        </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" (click)="resetFilters()">
+            Limpar filtros
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="muted">Carregando…</div>
+    <div *ngIf="erro" class="erro">{{ erro }}</div>
+
+    <!-- Cards com altura fixa + scroll -->
+    <div class="cards-area">
+      <div class="cards" *ngIf="!loading">
+        <button class="card"
+                *ngFor="let j of filtered"
+                [class.disabled]="isFull(j)"
+                (click)="!isFull(j) && abrirModal(j)"
+                [attr.aria-disabled]="isFull(j)">
+            <span class="card-id">#{{ j.idJogo }}</span>
+            <div class="card-title">{{ j.titulo }}</div>
+            <div class="card-subtitle">{{ infoLinha(j) }}</div>
+
+            <span class="badge" [class.badge-private]="tipoBadge(j)==='Privado'">
+            {{ tipoBadge(j) }}
+            </span>
+
+            <!-- canto inferior direito -->
+            <div class="people">
+            <span *ngIf="isFull(j)" class="status-full">Sessão Completa</span>
+            <span class="people-count">
+                {{ j.playerAtivos ?? 0 }}/{{ j.qtdPessoas ?? 0 }}
+            </span>
+            </div>
+        </button>
+
+        <div class="muted" *ngIf="!filtered?.length">Nenhuma sessão encontrada.</div>
+      </div>
+    </div>
+  </section>
+
+  <app-footer shell-footer
+              [siteName]="siteName"
+              [teamName]="'Equipe FSA RPG'"
+              [leftLogoSrc]="'/assets/logo-fsa.png'">
+  </app-footer>
+
+  <!-- Modal Detalhes (idêntico ao anterior) -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="fecharModal()"></div>
+  <!-- Backdrop -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="fecharModal()"></div>
+
+<!-- Modal -->
+<div class="modal" *ngIf="showModal">
+  <div class="modal-dialog">
+    <header class="modal-header">
+      <h3>Detalhes da Sessão</h3>
+      <button class="icon-btn" (click)="fecharModal()" aria-label="Fechar">✕</button>
+    </header>
+
+    <div class="modal-body" *ngIf="selected as s">
+        <div class="table">
+
+            <div class="tr">
+            <div class="th">Título</div>
+            <div class="td strong">{{ s.titulo }}</div>
+            </div>
+
+            <div class="tr">
+            <div class="th">Tipo</div>
+            <div class="td">{{ tipoBadge(s) }}</div>
+            </div>
+
+            <div class="tr">
+            <div class="th">Mestre</div>
+            <div class="td">@{{ s.master?.nickname }}</div>
+            </div>
+
+            <div class="tr" *ngIf="s.geracaoMundo?.nome">
+            <div class="th">Geração do Mundo</div>
+            <div class="td">
+                <div class="strong">{{ s.geracaoMundo?.nome }}</div>
+                <div class="muted" *ngIf="s.geracaoMundo?.descricao">{{ s.geracaoMundo?.descricao }}</div>
+            </div>
+            </div>
+
+            <div class="tr" *ngIf="s.estiloCampanha?.nome">
+            <div class="th">Estilo de Campanha</div>
+            <div class="td">
+                <div class="strong">{{ s.estiloCampanha?.nome }}</div>
+                <div class="muted" *ngIf="s.estiloCampanha?.descricao">{{ s.estiloCampanha?.descricao }}</div>
+            </div>
+            </div>
+
+            <div class="tr" *ngIf="s.historia?.nome">
+            <div class="th">História</div>
+            <div class="td">
+                <div class="strong">{{ s.historia?.nome }}</div>
+                <div class="muted" *ngIf="s.historia?.descricao">{{ s.historia?.descricao }}</div>
+            </div>
+            </div>
+
+            <div class="tr" *ngIf="s.tema?.nome">
+            <div class="th">Tema</div>
+            <div class="td">
+                <div class="strong">{{ s.tema?.nome }}</div>
+                <div class="muted" *ngIf="s.tema?.descricao">{{ s.tema?.descricao }}</div>
+            </div>
+            </div>
+
+            <div class="tr" *ngIf="s.qtdPessoas || s.nivelInicial">
+            <div class="th">Regras</div>
+            <div class="td">
+                <span *ngIf="s.qtdPessoas">Vagas: {{ s.qtdPessoas }}</span>
+                <span *ngIf="s.qtdPessoas && s.nivelInicial"> · </span>
+                <span *ngIf="s.nivelInicial">Nível Inicial: {{ s.nivelInicial }}</span>
+            </div>
+            </div>
+
+            <div class="tr" *ngIf="s.isEspecificClass === 1">
+            <div class="th">Restrições</div>
+            <div class="td td-center">
+                <div class="subhead">Classes específicas</div>
+
+                <div *ngIf="loadingClasses" class="muted">Carregando classes…</div>
+
+                <div *ngIf="!loadingClasses">
+                <div class="chips center">
+                    <span class="chip" *ngFor="let c of classesEspecificas">{{ c.nome }}</span>
+                </div>
+                <div class="muted" *ngIf="!classesEspecificas?.length">Nenhuma classe retornada.</div>
+                </div>
+            </div>
+            </div>
+
+        </div>
+        </div>
+
+
+    <footer class="modal-footer">
+  <button class="btn btn-ghost" (click)="fecharModal()">Cancelar</button>
+
+  <!-- Sessão privada: pede senha -->
+  <ng-container *ngIf="isPrivado(selected); else entrarDireto">
+    <div class="senha-wrap">
+      <input #senhaDigitada
+                type="password"
+                name="session-password"
+                autocomplete="new-password"
+                placeholder="Senha da sessão"
+                (keydown.enter)="confirmarSenha(senhaDigitada.value)" />
+      <button class="btn btn-primary" (click)="confirmarSenha(senhaDigitada.value)">
+        Entrar
+      </button>
+    </div>
+    <div class="erro" *ngIf="senhaErro">{{ senhaErro }}</div>
+  </ng-container>
+
+  <!-- Sessão pública: entra direto -->
+  <ng-template #entrarDireto>
+    <button class="btn btn-primary" (click)="entrarSessaoDireto()">Entrar na sessão</button>
+  </ng-template>
+</footer>
+  </div>
+</div>
+</app-page-shell>

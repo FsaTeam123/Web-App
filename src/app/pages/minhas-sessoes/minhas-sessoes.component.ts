@@ -19,7 +19,7 @@ import { UserSessionService } from '../../core/session/user-session.service';
 export class MinhasSessoesComponent implements OnInit {
 
   mestradas: any[] = [];
-  jogadasTitulos: string[] = [];
+  jogadas: any[] = []; 
   loading = true;
 
   constructor(
@@ -37,7 +37,7 @@ export class MinhasSessoesComponent implements OnInit {
     }); 
 
     this.http.get<string[]>(API_ENDPOINTS.jogosPorJogador(userId)).subscribe({
-      next: (r) => this.jogadasTitulos = r ?? [],
+      next: (r) => this.jogadas = r ?? [],
       error: () => {},
       complete: () => this.loading = false
     });
@@ -49,6 +49,7 @@ export class MinhasSessoesComponent implements OnInit {
   }
 
   infoLinha(j: any): string {
+    console.log(j);
     const parts = [
       j?.tipoJogo?.nome,
       j?.geracaoMundo?.nome,

@@ -46,4 +46,4 @@ p.lead {
 .btn-ghost { background:transparent; color:#f4f4f5; border-color:rgba(255,255,255,.18); }
 .btn-ghost:hover { background:rgba(255,255,255,.06); }
 
-.btn-lg { padding: 12px 18px; font-size: clamp(.95rem, 1.6vw, 1.05rem); }
+.btn-lg { padding: 12px 18px; font-size: clamp(.95rem, 1.6vw, 1.05rem); } 
