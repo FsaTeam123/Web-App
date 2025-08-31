@@ -1,9 +1,9 @@
 <section class="session-root">
   <!-- Header da sessão (substitui o header fixo nessa página) -->
   <header class="session-header" #hdr>
-    <div class="session-info" *ngIf="jogo">
-      <span class="badge">#{{ jogo?.idJogo || jogo?.id }}</span>
-      <strong class="title">{{ jogo?.titulo || 'Sessão' }}</strong>
+    <div class="session-info" *ngIf="jogo as game">
+        <span class="badge">#{{ game.idJogo || game.id }}</span>
+        <strong class="title">{{ game.titulo || 'Sessão' }}</strong>
     </div>
 
     <nav class="session-nav" aria-label="Navegação da sessão">
@@ -17,10 +17,9 @@
         </button>
 
         <!-- (antigo Lobby) agora MESA -->
-        <button class="nav-btn" [class.active]="activeTab==='lobby'" (click)="go('lobby')" title="Mesa">
-            <!-- ícone estilo “grid”/quadro, para diferenciar da casinha -->
+        <button class="nav-btn" (click)="openMesa()" title="Mesa (Participantes)">
             <svg viewBox="0 0 24 24" class="ico">
-            <path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/>
+                <path d="M3 6h18v3H3V6zm0 5h18v3H3v-3zm0 5h18v3H3v-3z"/>
             </svg>
             <span class="nav-label">Mesa</span>
         </button>
@@ -85,3 +84,61 @@
     </div>
   </div>
 </section>
+
+<div class="mesa-overlay" *ngIf="mesaOpen" (click)="closeMesa()">
+  <div class="mesa-modal" (click)="$event.stopPropagation()">
+    <header class="mesa-header">
+      <h3>Mesa — Participantes</h3>
+      <div class="spacer"></div>
+      <button class="mesa-icon" (click)="closeMesa()" aria-label="Fechar">✕</button>
+    </header>
+
+    <div class="mesa-body">
+      <div *ngIf="mesaLoading" class="mesa-muted">Carregando participantes…</div>
+      <div *ngIf="mesaErr" class="mesa-err">{{ mesaErr }}</div>
+
+      <!-- Mestre -->
+      <div *ngIf="mesaMaster as master" class="master-card">
+        <div class="avatar-wrap">
+            <img class="avatar"
+                [src]="master._hasPhoto ? master.fotoUrl : DEFAULT_AVATAR_PATH"
+                (error)="handleImageError(master)"
+                alt="Mestre avatar">
+            <span class="status-dot" [class.online]="master.online === 1"></span>
+        </div>
+        <div class="info">
+            <div class="line1">
+            <strong class="nick">{{ master.nickname }}</strong>
+            <span class="id">#{{ master.idUsuario }}</span>
+            <span class="role">Mestre</span>
+            </div>
+        </div>
+      </div>
+
+      <hr class="mesa-sep" *ngIf="mesaMaster">
+
+      <!-- Jogadores -->
+      <div class="players-grid">
+        <div class="player-card" *ngFor="let p of mesaPlayers; trackBy: trackByUserId">
+          <div class="avatar-wrap">
+            <img class="avatar"
+                 [src]="p._hasPhoto ? p.fotoUrl : DEFAULT_AVATAR_PATH"
+                 (error)="handleImageError(p)"
+                 [attr.alt]="p.nickname">
+            <span class="status-dot" [class.online]="p.online === 1"></span>
+          </div>
+          <div class="info">
+            <div class="line1">
+              <strong class="nick">{{ p.nickname }}</strong>
+              <span class="id">#{{ p.userId }}</span>
+            </div>
+            <div class="line2">{{ p.playerNome }}</div>
+          </div>
+        </div>
+        <div *ngIf="!mesaLoading && !mesaErr && mesaPlayers?.length===0" class="mesa-muted">
+          Nenhum jogador na mesa ainda.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

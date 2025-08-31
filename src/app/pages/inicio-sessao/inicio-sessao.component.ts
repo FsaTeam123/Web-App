@@ -5,16 +5,37 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { API_ENDPOINTS, API_BASE_URL, DEFAULT_AVATAR_PATH } from '../../../config/app-config';
+
+import { API_ENDPOINTS, DEFAULT_AVATAR_PATH, WS_ENDPOINTS } from '../../../config/app-config';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { StompService } from '../../core/realtime/stomp.service'; // <- novo serviço
 
 type TabKey = 'home' | 'lobby' | 'personagens' | 'mapas' | 'anotacoes' | 'chat';
 type ToolKey = 'pencil' | 'eraser' | 'rect' | 'ellipse';
 type Snapshot = { dataUrl: string; width: number; height: number; originX: number; originY: number };
 
+interface MesaPlayerVM {
+  idPlayer: number;
+  playerNome: string;
+  userId: number;
+  nickname: string;
+  online: number | null;
+  fotoUrl: string;
+  _hasPhoto: boolean;
+  isMaster?: boolean;
+}
+interface MesaMasterVM {
+  idUsuario: number;
+  nickname: string;
+  online?: number | null;
+  fotoUrl: string;
+  _hasPhoto: boolean;
+}
+
 @Component({
   selector: 'app-inicio-sessao',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './inicio-sessao.component.html',
   styleUrls: ['./inicio-sessao.component.css']
 })
@@ -27,7 +48,11 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   jogo: any | null = null;
   activeTab: TabKey = 'lobby';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private stompSvc: StompService
+  ) {}
 
   // viewport / transform
   private ctx!: CanvasRenderingContext2D;
@@ -82,6 +107,15 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   private boundUp?: (e: PointerEvent)=>void;
   private boundCancel?: (e: PointerEvent)=>void;
   private boundWheel?: (e: WheelEvent)=>void;
+
+  mesaOpen = false;
+  mesaLoading = false;
+  mesaErr: string | null = null;
+  mesaPlayers: MesaPlayerVM[] = [];
+  mesaMaster: MesaMasterVM | null = null;
+  DEFAULT_AVATAR_PATH = DEFAULT_AVATAR_PATH;
+
+  private mesaUnsubs: Array<() => void> = [];
 
   ngOnInit(): void {
     const st = history.state?.jogo;
@@ -141,6 +175,7 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.boundUp) canvas.removeEventListener('pointerup', this.boundUp);
     if (this.boundCancel) canvas.removeEventListener('pointercancel', this.boundCancel);
     if (this.boundWheel) canvas.removeEventListener('wheel', this.boundWheel as any);
+    this.cleanupMesaRealtime();
   }
 
   @HostListener('window:resize')
@@ -559,4 +594,157 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     ctx.restore();
   }
+
+  openMesa(){
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    if (!idJogo){ this.mesaOpen = true; this.mesaErr = 'ID do jogo não encontrado.'; return; }
+
+    this.mesaOpen = true;
+    this.mesaErr = null;
+    this.mesaLoading = true;
+
+    this.fetchMesa(idJogo).finally(()=>{
+      this.mesaLoading = false;
+      this.bindMesaRealtime(idJogo);
+    });
+  }
+
+  closeMesa(){
+    this.mesaOpen = false;
+    this.cleanupMesaRealtime();
+  }
+
+  private cleanupMesaRealtime(){
+    // cancela inscrições STOMP desta tela
+    this.mesaUnsubs.forEach(u => { try{ u(); } catch{} });
+    this.mesaUnsubs = [];
+  }
+
+  private async fetchMesa(idJogo: number){
+    try{
+      // players
+      const resp = await this.http.get<any[]>(API_ENDPOINTS.playersPorJogo(idJogo)).toPromise();
+      const players = Array.isArray(resp) ? resp : [];
+
+      // mestre
+      const masterId: number | undefined =
+        this.jogo?.master?.idUsuario ?? players?.[0]?.jogo?.master?.idUsuario;
+
+      let masterVM: MesaMasterVM | null = null;
+      if (masterId){
+        const m = await this.http.get<any>(`${API_ENDPOINTS.usuarios}/${masterId}`).toPromise();
+        masterVM = {
+          idUsuario: m?.idUsuario,
+          nickname: m?.nickname || 'Mestre',
+          online: m?.online ?? null,
+          fotoUrl: API_ENDPOINTS.usuarioFoto(m?.idUsuario),
+          _hasPhoto: true,
+        };
+      }
+
+      // map players
+      const mapped: MesaPlayerVM[] = players.map(p => ({
+        idPlayer: p.idPlayer,
+        playerNome: p.nome,
+        userId: p.usuario?.idUsuario,
+        nickname: p.usuario?.nickname || p.usuario?.nome || 'Jogador',
+        online: p.usuario?.online ?? null,
+        fotoUrl: API_ENDPOINTS.usuarioFoto(p.usuario?.idUsuario),
+        _hasPhoto: true
+      }));
+
+      // remove o mestre da lista (se vier como player)
+      const filtered = masterVM
+        ? mapped.filter(x => x.userId !== masterVM!.idUsuario)
+        : mapped;
+
+      filtered.sort((a,b)=> (this.isOnline(b.online) ? 1:0) - (this.isOnline(a.online) ? 1:0));
+
+      this.mesaMaster = masterVM;
+      this.mesaPlayers = filtered;
+    }catch(e){
+      console.error(e);
+      this.mesaErr = 'Erro ao carregar a Mesa.';
+    }
+  }
+
+  private bindMesaRealtime(idJogo: number){
+    this.cleanupMesaRealtime();
+
+    const unsubMesa = this.stompSvc.subscribe(
+      WS_ENDPOINTS.topics.mesa(idJogo),
+      (msg)=> this.handleMesaMessage(msg, idJogo)
+    );
+    const unsubStatus = this.stompSvc.subscribe(
+      WS_ENDPOINTS.topics.mesaStatus(idJogo),
+      (msg)=> this.handleMesaMessage(msg, idJogo)
+    );
+
+    this.mesaUnsubs.push(unsubMesa, unsubStatus);
+  }
+
+  private async handleMesaMessage(message: any, idJogo: number){
+    try{
+      const payload = JSON.parse(message.body || '{}');
+      const t = String(payload.type || '').toUpperCase();
+
+      if (t === 'ONLINE' || t === 'OFFLINE'){
+        const onlineVal = t === 'ONLINE' ? 1 : 0;
+        // mestre
+        if (this.mesaMaster && this.mesaMaster.idUsuario === payload.userId){
+          this.mesaMaster.online = onlineVal;
+        }
+        // players
+        const i = this.mesaPlayers.findIndex(p => p.userId === payload.userId);
+        if (i >= 0){
+          this.mesaPlayers[i] = { ...this.mesaPlayers[i], online: onlineVal };
+        }
+        return;
+      }
+
+      if (t === 'JOIN'){
+        const vm: MesaPlayerVM = {
+          idPlayer: payload.idPlayer,
+          playerNome: payload.nome,
+          userId: payload.usuario?.idUsuario,
+          nickname: payload.usuario?.nickname || 'Jogador',
+          online: payload.usuario?.online ?? null,
+          fotoUrl: API_ENDPOINTS.usuarioFoto(payload.usuario?.idUsuario),
+          _hasPhoto: true
+        };
+        const i = this.mesaPlayers.findIndex(p => p.userId === vm.userId);
+        if (i >= 0) this.mesaPlayers[i] = vm;
+        else this.mesaPlayers = [vm, ...this.mesaPlayers];
+        return;
+      }
+
+      if (t === 'LEAVE'){
+        this.mesaPlayers = this.mesaPlayers.filter(p => p.userId !== payload.userId);
+        return;
+      }
+
+      if (t === 'PHOTO_UPDATE'){
+        const bust = (u: string) => u + (u.includes('?') ? '&' : '?') + 't=' + Date.now();
+        if (this.mesaMaster && this.mesaMaster.idUsuario === payload.userId){
+          this.mesaMaster.fotoUrl = bust(this.mesaMaster.fotoUrl);
+          this.mesaMaster._hasPhoto = true;
+        }
+        const i = this.mesaPlayers.findIndex(p => p.userId === payload.userId);
+        if (i >= 0){
+          this.mesaPlayers[i] = { ...this.mesaPlayers[i], fotoUrl: bust(this.mesaPlayers[i].fotoUrl), _hasPhoto: true };
+        }
+        return;
+      }
+
+      // fallback (mensagem desconhecida)
+      await this.fetchMesa(idJogo);
+    }catch(e){
+      console.warn('Mensagem STOMP inválida', e);
+    }
+  }
+
+  // utils mesa
+  private isOnline(v: number | null | undefined){ return v === 1; }
+  handleImageError(item: { _hasPhoto: boolean }){ item._hasPhoto = false; }
+  trackByUserId = (_: number, p: MesaPlayerVM) => p.userId || p.idPlayer;
 }
