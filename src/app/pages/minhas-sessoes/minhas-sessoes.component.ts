@@ -45,7 +45,7 @@ export class MinhasSessoesComponent implements OnInit {
 
   irParaSessao(item: any){
     // por enquanto só navega — você pode passar query params se precisar
-    this.router.navigate(['/inicio-sessao']);
+     this.router.navigate(['/inicio-sessao'], { state: { jogo: item } });
   }
 
   infoLinha(j: any): string {
