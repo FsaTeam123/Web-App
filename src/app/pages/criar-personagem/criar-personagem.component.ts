@@ -18,11 +18,24 @@ type Raca = {
   descricao?: string;
   ativo?: number;
   habilidades?: Habilidade[];
-  // imagens – o backend pode mandar em qualquer destes campos
-  fotoBase64?: string;                 // base64
+  fotoBase64?: string;
   fotoMime?: string;
-  imagem?: string;               // base64 (variante)
+  imagem?: string;
   imagemContentType?: string;
+};
+
+type Proeficiencia = { idProeficiencia: number; nome: string; descricao?: string; ativo?: number };
+type Pericia       = { idPericia: number;       nome: string; descricao?: string; ativo?: number };
+
+type Classe = {
+  idClasse: number;
+  nome: string;
+  descricao?: string;
+  ativo?: number;
+  imagemBase64?: string;
+  imagemContentType?: string;
+  proeficiencias?: Proeficiencia[];
+  pericias?: Pericia[];
 };
 
 @Component({
@@ -56,29 +69,36 @@ export class CriarPersonagemComponent implements OnInit {
   fotoMime?: string;
   erro?: string;
 
-  // raças / deck
+  // ===== R A Ç A =====
   loadingRacas = true;
-  deckOpen = false;
+  deckOpenRaca = false;
   racas: Raca[] = [];
-  current = 0;            // índice da carta central (carousel)
-  selected?: Raca;        // raca escolhida
+  currentRaca = 0;
+  selectedRaca?: Raca;
+
+  // ===== C L A S S E =====
+  loadingClassesList = true;
+  deckOpenClasse = false;
+  classes: Classe[] = [];
+  currentClasse = 0;
+  selectedClasse?: Classe;
 
   ngOnInit(): void {
-    // id do jogo vindo de /entrar-secao
     const q = this.route.snapshot.queryParamMap.get('jogo');
     this.idJogo = q ? Number(q) : undefined;
 
     this.fetchRacas();
+    this.fetchClasses();
   }
 
+  // ---------- R A Ç A ----------
   fetchRacas() {
     this.loadingRacas = true;
     this.http.get<Raca[]>(API_ENDPOINTS.racas).subscribe({
       next: (arr) => {
         this.racas = Array.isArray(arr) ? arr : [];
+        this.currentRaca = 0;
         this.loadingRacas = false;
-        // se já existir ao menos uma, abre no meio
-        this.current = 0;
       },
       error: () => {
         this.erro = 'Não foi possível carregar as raças.';
@@ -87,44 +107,54 @@ export class CriarPersonagemComponent implements OnInit {
     });
   }
 
-  // ===== Deck / Carousel =====
-  openDeck() { if (!this.deckOpen) this.deckOpen = true; }
-  closeDeck() { this.deckOpen = false; }
+  openRaceDeck()  { if (!this.deckOpenRaca) this.deckOpenRaca = true; }
+  closeRaceDeck() { this.deckOpenRaca = false; }
+  prevRace() { if (this.racas.length) this.currentRaca = (this.currentRaca - 1 + this.racas.length) % this.racas.length; }
+  nextRace() { if (this.racas.length) this.currentRaca = (this.currentRaca + 1) % this.racas.length; }
+  chooseCurrentRace() { if (this.racas.length) { this.selectedRaca = this.racas[this.currentRaca]; this.deckOpenRaca = false; } }
+  leftIndexRaca()  { return this.racas.length ? (this.currentRaca - 1 + this.racas.length) % this.racas.length : 0; }
+  rightIndexRaca() { return this.racas.length ? (this.currentRaca + 1) % this.racas.length : 0; }
 
-  prev() {
-    if (!this.racas.length) return;
-    this.current = (this.current - 1 + this.racas.length) % this.racas.length;
+  // ---------- C L A S S E ----------
+  fetchClasses() {
+    this.loadingClassesList = true;
+    this.http.get<Classe[]>(API_ENDPOINTS.classes).subscribe({
+      next: (arr) => {
+        this.classes = Array.isArray(arr) ? arr : [];
+        this.currentClasse = 0;
+        this.loadingClassesList = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar as classes.';
+        this.loadingClassesList = false;
+      }
+    });
   }
-  next() {
-    if (!this.racas.length) return;
-    this.current = (this.current + 1) % this.racas.length;
-  }
 
-  chooseCurrent() {
-    if (!this.racas.length) return;
-    this.selected = this.racas[this.current];
-    this.deckOpen = false; // fecha o baralho ao escolher
-  }
+  openClassDeck()  { if (!this.deckOpenClasse) this.deckOpenClasse = true; }
+  closeClassDeck() { this.deckOpenClasse = false; }
+  prevClass() { if (this.classes.length) this.currentClasse = (this.currentClasse - 1 + this.classes.length) % this.classes.length; }
+  nextClass() { if (this.classes.length) this.currentClasse = (this.currentClasse + 1) % this.classes.length; }
+  chooseCurrentClass() { if (this.classes.length) { this.selectedClasse = this.classes[this.currentClasse]; this.deckOpenClasse = false; } }
+  leftIndexClasse()  { return this.classes.length ? (this.currentClasse - 1 + this.classes.length) % this.classes.length : 0; }
+  rightIndexClasse() { return this.classes.length ? (this.currentClasse + 1) % this.classes.length : 0; }
 
-  leftIndex()  { return this.racas.length ? (this.current - 1 + this.racas.length) % this.racas.length : 0; }
-  rightIndex() { return this.racas.length ? (this.current + 1) % this.racas.length : 0; }
-
-  imgSrc(r?: Raca): string | null {
+  // ---------- IMG helpers ----------
+  imgSrcRaca(r?: Raca): string | null {
     if (!r) return null;
-
-    // aceita qualquer um dos campos, priorizando fotoBase64
     let raw = r.fotoBase64 ?? r.imagem ?? null;
     if (!raw) return null;
-
-    // Se já vier "data:image/png;base64,AAAA", reaproveita
-    const alreadyDataUrl = /^data:.*;base64,/i.test(raw);
-    if (alreadyDataUrl) {
-        return raw.replace(/\s/g, ''); // remove quebras de linha ocasionais
-    }
-
-    // Caso venha apenas o base64 cru, monta o data URL
-    const b64 = raw.replace(/\s/g, ''); // limpa espaços/CRLF do backend
+    if (/^data:.*;base64,/i.test(raw)) return raw.replace(/\s/g, '');
     const mime = r.fotoMime || r.imagemContentType || 'image/png';
+    return `data:${mime};base64,${raw.replace(/\s/g, '')}`;
+  }
+
+  imgSrcClasse(c?: Classe): string | null {
+    if (!c) return null;
+    const b64 = (c.imagemBase64 || '').replace(/\s/g, '');
+    if (!b64) return null;
+    const mime = c.imagemContentType || 'image/png';
+    if (/^data:.*;base64,/i.test(b64)) return b64;
     return `data:${mime};base64,${b64}`;
   }
 
@@ -137,51 +167,25 @@ export class CriarPersonagemComponent implements OnInit {
     reader.onload = () => {
       const res = String(reader.result || '');
       const comma = res.indexOf(',');
-      if (comma >= 0) {
-        this.fotoMime = file.type || 'image/png';
-        this.fotoB64 = res.slice(comma + 1);
-      } else {
-        // fallback se vier só o binário
-        this.fotoMime = file.type || 'image/png';
-        this.fotoB64 = res;
-      }
+      this.fotoMime = file.type || 'image/png';
+      this.fotoB64 = comma >= 0 ? res.slice(comma + 1) : res;
     };
     reader.readAsDataURL(file);
   }
 
-  // enviar/continuar (aqui apenas navego adiante mantendo idJogo)
   continuar() {
-    if (!this.nome.trim()) {
-      this.erro = 'Informe um nome para o personagem.';
-      return;
-    }
-    if (!this.selected) {
-      this.erro = 'Escolha uma raça.';
-      return;
-    }
+    if (!this.nome.trim()) { this.erro = 'Informe um nome para o personagem.'; return; }
+    if (!this.selectedRaca) { this.erro = 'Escolha uma raça.'; return; }
+    if (!this.selectedClasse) { this.erro = 'Escolha uma classe.'; return; }
     this.erro = '';
 
-    // Aqui você pode chamar seu endpoint de criação de Player.
-    // Por enquanto, seguimos para a próxima etapa levando infos via query.
     this.router.navigate(['/criar-personagem/classe'], {
       queryParams: {
         jogo: this.idJogo,
         nome: this.nome,
-        raca: this.selected?.idRaca
+        raca: this.selectedRaca?.idRaca,
+        classe: this.selectedClasse?.idClasse
       }
     });
-  }
-
-  stackImg(which: 'left'|'center'|'right'): string | null {
-    if (!this.racas.length) return null;
-    let idx = this.current;
-    if (which === 'left')  idx = this.leftIndex();
-    if (which === 'right') idx = this.rightIndex();
-    return this.imgSrc(this.racas[idx]);
-  }
-
-  stackBg(which: 'left'|'center'|'right') {
-    const src = this.stackImg(which);
-    return src ? `url("${src}")` : 'none';
   }
 }

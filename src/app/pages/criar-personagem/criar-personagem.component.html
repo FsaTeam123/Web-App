@@ -1,9 +1,6 @@
 <!-- src/app/pages/criar-personagem/criar-personagem.component.html -->
 <app-page-shell [useAltBackground]="useAltBackground">
-  <app-header-fixo shell-header
-                   [siteName]="siteName"
-                   [logoSrc]="'/assets/logo-rpg.png'">
-  </app-header-fixo>
+  <app-header-fixo shell-header [siteName]="siteName" [logoSrc]="'/assets/logo-rpg.png'"></app-header-fixo>
 
   <section class="wrap">
     <h2>Criar <span>Personagem</span></h2>
@@ -11,23 +8,19 @@
     <div *ngIf="erro" class="erro">{{ erro }}</div>
 
     <div class="grid">
-      <!-- Card/Form -->
+      <!-- ==== FORM PRINCIPAL ==== -->
       <div class="card form-card">
         <h3>Identidade</h3>
 
         <label class="lbl">Nome do Personagem</label>
-        <input class="input" type="text" autocomplete="off"
-               [(ngModel)]="nome"
-               placeholder="ex.: Arannis, Yara, Kael..." />
+        <input class="input" type="text" autocomplete="off" [(ngModel)]="nome" placeholder="ex.: Arannis, Yara, Kael..." />
 
         <label class="lbl">Foto (opcional)</label>
         <div class="avatar-row">
           <div class="avatar" *ngIf="fotoB64; else noAvatar">
             <img [src]="'data:' + (fotoMime||'image/png') + ';base64,' + fotoB64" alt="Foto do personagem" />
           </div>
-          <ng-template #noAvatar>
-            <div class="avatar placeholder">?</div>
-          </ng-template>
+          <ng-template #noAvatar><div class="avatar placeholder">?</div></ng-template>
           <label class="btn btn-ghost file-btn">
             Escolher imagem
             <input type="file" accept="image/*" (change)="onFile($event)">
@@ -36,79 +29,150 @@
 
         <div class="divider"></div>
 
-        <h3>Raça</h3>
+        <!-- ====== DOIS DECKS LADO A LADO ====== -->
+        <div class="decks-row">
+          <!-- R A Ç A -->
+          <div class="deck-area">
+            <div class="area-title">Raça</div>
 
-        <div class="race-picker">
-        <!-- Deck fechado (stack) -->
-        <button *ngIf="!deckOpen"
-                class="deck-stack"
-                (click)="openDeck()">
-            <div class="stack one"
-                [ngStyle]="{'background-image': stackBg('left')}"></div>
-            <div class="stack two"
-                [ngStyle]="{'background-image': stackBg('center')}"></div>
-            <div class="stack three"
-                [ngStyle]="{'background-image': stackBg('right')}"></div>
+            <!-- Fechado -->
+            <button *ngIf="!deckOpenRaca" class="deck-stack" (click)="openRaceDeck()">
+              <div class="stack one"
+                   [style.backgroundImage]="imgSrcRaca(racas[leftIndexRaca()]) ? 'url(' + imgSrcRaca(racas[leftIndexRaca()]) + ')' : ''"></div>
+              <div class="stack two"
+                   [style.backgroundImage]="imgSrcRaca(racas[currentRaca]) ? 'url(' + imgSrcRaca(racas[currentRaca]) + ')' : ''"></div>
+              <div class="stack three"
+                   [style.backgroundImage]="imgSrcRaca(racas[rightIndexRaca()]) ? 'url(' + imgSrcRaca(racas[rightIndexRaca()]) + ')' : ''"></div>
+              <div class="deck-label">
+                <div class="t">Escolher Raça</div>
+                <div class="s">{{ selectedRaca?.nome || 'Toque para abrir' }}</div>
+              </div>
+            </button>
 
-            <div class="deck-label">
-            <div class="t">Escolher Raça</div>
-            <div class="s">{{ selected?.nome || 'Toque para abrir' }}</div>
-            </div>
-        </button>
+            <!-- Aberto -->
+            <div *ngIf="deckOpenRaca" class="deck-open">
+              <button class="nav left" (click)="prevRace()" aria-label="Anterior">‹</button>
 
-        <!-- Deck aberto (carousel) -->
-        <div *ngIf="deckOpen" class="deck-open">
-            <button class="nav left" (click)="prev()" aria-label="Anterior">‹</button>
-
-            <div class="cards">
-            <div class="card-raca side left" *ngIf="racas.length">
-                <img *ngIf="imgSrc(racas[leftIndex()]) as srcL; else noImgL" [src]="srcL" [alt]="racas[leftIndex()].nome">
-                <ng-template #noImgL><div class="noimg">?</div></ng-template>
-                <div class="name">{{ racas[leftIndex()].nome }}</div>
-            </div>
-
-            <div class="card-raca main" *ngIf="racas.length">
-                <img *ngIf="imgSrc(racas[current]) as srcC; else noImgC" [src]="srcC" [alt]="racas[current].nome">
-                <ng-template #noImgC><div class="noimg big">?</div></ng-template>
-                <div class="name">{{ racas[current].nome }}</div>
-                <button class="btn btn-primary select-btn" (click)="chooseCurrent()">Selecionar</button>
-            </div>
-
-            <div class="card-raca side right" *ngIf="racas.length">
-                <img *ngIf="imgSrc(racas[rightIndex()]) as srcR; else noImgR" [src]="srcR" [alt]="racas[rightIndex()].nome">
-                <ng-template #noImgR><div class="noimg">?</div></ng-template>
-                <div class="name">{{ racas[rightIndex()].nome }}</div>
-            </div>
-            </div>
-
-            <button class="nav right" (click)="next()" aria-label="Próxima">›</button>
-            <button class="icon-btn close-deck" (click)="closeDeck()" aria-label="Fechar">✕</button>
-        </div>
-        </div>
-
-
-        <!-- Resumo da raça escolhida -->
-        <div *ngIf="selected as s" class="raca-info">
-            <div class="r-head">
-                <div class="thumb" *ngIf="imgSrc(s) as sr; else nt">
-                <img [src]="sr" [alt]="s.nome" />
+              <div class="cards">
+                <div class="card-deck side left" *ngIf="racas.length">
+                  <img *ngIf="imgSrcRaca(racas[leftIndexRaca()]) as srcL; else noImgRL" [src]="srcL" [alt]="racas[leftIndexRaca()].nome">
+                  <ng-template #noImgRL><div class="noimg">{{ racas[leftIndexRaca()].nome[0] || 'R' }}</div></ng-template>
+                  <div class="name">{{ racas[leftIndexRaca()].nome }}</div>
                 </div>
-                <ng-template #nt>
-                <div class="thumb noimg">{{ s.nome[0] || 'R' }}</div>
-                </ng-template>
 
+                <div class="card-deck main" *ngIf="racas.length">
+                  <img *ngIf="imgSrcRaca(racas[currentRaca]) as srcC; else noImgRC" [src]="srcC" [alt]="racas[currentRaca].nome">
+                  <ng-template #noImgRC><div class="noimg big">{{ racas[currentRaca].nome[0] || 'R' }}</div></ng-template>
+                  <div class="name">{{ racas[currentRaca].nome }}</div>
+                  <button class="btn btn-primary select-btn" (click)="chooseCurrentRace()">Selecionar</button>
+                </div>
+
+                <div class="card-deck side right" *ngIf="racas.length">
+                  <img *ngIf="imgSrcRaca(racas[rightIndexRaca()]) as srcR; else noImgRR" [src]="srcR" [alt]="racas[rightIndexRaca()].nome">
+                  <ng-template #noImgRR><div class="noimg">{{ racas[rightIndexRaca()].nome[0] || 'R' }}</div></ng-template>
+                  <div class="name">{{ racas[rightIndexRaca()].nome }}</div>
+                </div>
+              </div>
+
+              <button class="nav right" (click)="nextRace()" aria-label="Próxima">›</button>
+              <button class="icon-btn close-deck" (click)="closeRaceDeck()" aria-label="Fechar">✕</button>
+            </div>
+
+            <!-- Resumo Raça -->
+            <div *ngIf="selectedRaca as sR" class="pick-info">
+              <div class="r-head">
+                <div class="thumb" *ngIf="imgSrcRaca(sR) as sr; else ntR"><img [src]="sr" [alt]="sR.nome" /></div>
+                <ng-template #ntR><div class="thumb noimg">{{ sR.nome[0] || 'R' }}</div></ng-template>
                 <div>
-                <div class="r-title">{{ s.nome }}</div>
-                <div class="r-desc" *ngIf="s.descricao">{{ s.descricao }}</div>
+                  <div class="r-title">{{ sR.nome }}</div>
+                  <div class="r-desc" *ngIf="sR.descricao">{{ sR.descricao }}</div>
                 </div>
+              </div>
+
+              <div class="r-habs" *ngIf="sR.habilidades?.length">
+                <div class="hab" *ngFor="let h of sR.habilidades">
+                  <div class="h-nome">{{ h.nome }}</div>
+                  <div class="h-desc" *ngIf="h.descricao">{{ h.descricao }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- C L A S S E -->
+          <div class="deck-area">
+            <div class="area-title">Classe</div>
+
+            <!-- Fechado -->
+            <button *ngIf="!deckOpenClasse" class="deck-stack" (click)="openClassDeck()">
+              <div class="stack one"
+                   [style.backgroundImage]="imgSrcClasse(classes[leftIndexClasse()]) ? 'url(' + imgSrcClasse(classes[leftIndexClasse()]) + ')' : ''"></div>
+              <div class="stack two"
+                   [style.backgroundImage]="imgSrcClasse(classes[currentClasse]) ? 'url(' + imgSrcClasse(classes[currentClasse]) + ')' : ''"></div>
+              <div class="stack three"
+                   [style.backgroundImage]="imgSrcClasse(classes[rightIndexClasse()]) ? 'url(' + imgSrcClasse(classes[rightIndexClasse()]) + ')' : ''"></div>
+              <div class="deck-label">
+                <div class="t">Escolher Classe</div>
+                <div class="s">{{ selectedClasse?.nome || 'Toque para abrir' }}</div>
+              </div>
+            </button>
+
+            <!-- Aberto -->
+            <div *ngIf="deckOpenClasse" class="deck-open">
+              <button class="nav left" (click)="prevClass()" aria-label="Anterior">‹</button>
+
+              <div class="cards">
+                <div class="card-deck side left" *ngIf="classes.length">
+                  <img *ngIf="imgSrcClasse(classes[leftIndexClasse()]) as sl; else noImgCL" [src]="sl" [alt]="classes[leftIndexClasse()].nome">
+                  <ng-template #noImgCL><div class="noimg">{{ classes[leftIndexClasse()].nome[0] || 'C' }}</div></ng-template>
+                  <div class="name">{{ classes[leftIndexClasse()].nome }}</div>
+                </div>
+
+                <div class="card-deck main" *ngIf="classes.length">
+                  <img *ngIf="imgSrcClasse(classes[currentClasse]) as sc; else noImgCC" [src]="sc" [alt]="classes[currentClasse].nome">
+                  <ng-template #noImgCC><div class="noimg big">{{ classes[currentClasse].nome[0] || 'C' }}</div></ng-template>
+                  <div class="name">{{ classes[currentClasse].nome }}</div>
+                  <button class="btn btn-primary select-btn" (click)="chooseCurrentClass()">Selecionar</button>
+                </div>
+
+                <div class="card-deck side right" *ngIf="classes.length">
+                  <img *ngIf="imgSrcClasse(classes[rightIndexClasse()]) as sr; else noImgCR" [src]="sr" [alt]="classes[rightIndexClasse()].nome">
+                  <ng-template #noImgCR><div class="noimg">{{ classes[rightIndexClasse()].nome[0] || 'C' }}</div></ng-template>
+                  <div class="name">{{ classes[rightIndexClasse()].nome }}</div>
+                </div>
+              </div>
+
+              <button class="nav right" (click)="nextClass()" aria-label="Próxima">›</button>
+              <button class="icon-btn close-deck" (click)="closeClassDeck()" aria-label="Fechar">✕</button>
             </div>
 
-            <div class="r-habs" *ngIf="s.habilidades?.length">
-                <div class="hab" *ngFor="let h of s.habilidades">
-                <div class="h-nome">{{ h.nome }}</div>
-                <div class="h-desc" *ngIf="h.descricao">{{ h.descricao }}</div>
+            <!-- Resumo Classe -->
+            <div *ngIf="selectedClasse as c" class="pick-info">
+              <div class="r-head">
+                <div class="thumb" *ngIf="imgSrcClasse(c) as sc; else ntC"><img [src]="sc" [alt]="c.nome" /></div>
+                <ng-template #ntC><div class="thumb noimg">{{ c.nome[0] || 'C' }}</div></ng-template>
+                <div>
+                  <div class="r-title">{{ c.nome }}</div>
+                  <div class="r-desc" *ngIf="c.descricao">{{ c.descricao }}</div>
                 </div>
+              </div>
+
+              <div class="r-habs" *ngIf="c.proeficiencias?.length">
+                <div class="subhead">Proficiências</div>
+                <div class="hab" *ngFor="let p of c.proeficiencias">
+                  <div class="h-nome">{{ p.nome }}</div>
+                  <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+                </div>
+              </div>
+
+              <div class="r-habs" *ngIf="c.pericias?.length">
+                <div class="subhead">Perícias</div>
+                <div class="hab" *ngFor="let p of c.pericias">
+                  <div class="h-nome">{{ p.nome }}</div>
+                  <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
 
         <div class="actions">
@@ -116,21 +180,17 @@
         </div>
       </div>
 
-      <!-- Lateral com dicas (decorativo) -->
+      <!-- Lateral com dicas -->
       <div class="card tips-card">
         <h4>Dicas</h4>
         <ul>
           <li>O nome pode conter letras, números e apóstrofos.</li>
-          <li>Escolha a raça e veja suas habilidades antes de continuar.</li>
-          <li>Você está criando para a sessão: <strong *ngIf="idJogo">#{{ idJogo }}</strong><span *ngIf="!idJogo">— (sem sessão)</span></li>
+          <li>Escolha a raça e a classe e veja as habilidades antes de continuar.</li>
+          <li>Você está criando para a sessão: <strong *ngIf="idJogo">#{{ idJogo }}</strong><span *ngIf="!idJogo"> — (sem sessão)</span></li>
         </ul>
       </div>
     </div>
   </section>
 
-  <app-footer shell-footer
-              [siteName]="siteName"
-              [teamName]="'Equipe FSA RPG'"
-              [leftLogoSrc]="'/assets/logo-fsa.png'">
-  </app-footer>
+  <app-footer shell-footer [siteName]="siteName" [teamName]="'Equipe FSA RPG'" [leftLogoSrc]="'/assets/logo-fsa.png'"></app-footer>
 </app-page-shell>

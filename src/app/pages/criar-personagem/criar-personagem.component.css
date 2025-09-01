@@ -15,6 +15,7 @@ h2 {
 h2 span { color: #e6bd3b; }
 .erro { color: #ff8a8a; margin-bottom: 12px; }
 
+/* ===== layout principal ===== */
 .grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -28,6 +29,7 @@ h2 span { color: #e6bd3b; }
   box-shadow: 0 8px 28px rgba(0,0,0,.25);
 }
 
+/* form */
 .form-card h3 { margin: 4px 0 10px; font-weight: 900; }
 .lbl { display:block; margin: 8px 0 6px; color: #d6d6de; }
 .input {
@@ -48,7 +50,20 @@ h2 span { color: #e6bd3b; }
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
 
-/* Deck fechado (pilha) */
+/* ===== DOIS DECKS LADO A LADO ===== */
+.decks-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+  align-items:start;
+}
+.deck-area { display:flex; flex-direction:column; gap:10px; }
+.area-title { font-weight:900; opacity:.95; }
+
+/* centraliza e limita a largura dos decks */
+.deck-stack, .deck-open { width: min(460px, 100%); margin: 0 auto; }
+
+/* --- Deck fechado (pilha) --- */
 .deck-stack {
   position: relative;
   display: grid;
@@ -59,46 +74,59 @@ h2 span { color: #e6bd3b; }
   background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
   cursor: pointer;
 }
-.stack {
+.stack{
   position: absolute; width: 130px; height: 180px; border-radius: 14px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 6px 20px rgba(0,0,0,.25);
+
+  /* mostra a arte inteira das cartas */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
-.stack.one  { transform: rotate(-10deg) translate(-36px, -8px); }
-.stack.two  { transform: rotate(4deg)   translate(6px, 8px); }
-.stack.three{ transform: rotate(12deg)  translate(40px, -6px); }
+.stack.one  { transform: rotate(-8deg) translate(-34px, -6px); }
+.stack.two  { transform: rotate( 4deg) translate(  6px,  8px); }
+.stack.three{ transform: rotate(12deg) translate( 40px, -6px); }
+
 .deck-label { position: relative; text-align:center; z-index: 2; }
 .deck-label .t { font-weight:900; }
 .deck-label .s { color:#d6d6de; font-size:.9rem; }
 
-/* Deck aberto (carousel) */
+/* --- Deck aberto (carousel) --- */
 .deck-open { position: relative; padding: 8px 36px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; }
-.deck-open .cards {
-  display:grid; grid-template-columns: 1fr 1fr 1fr; align-items: end; gap: 10px;
+.deck-open .cards{
+  display:grid; grid-template-columns: 1fr 1.1fr 1fr;
+  align-items:end; gap:10px; justify-items:center;
 }
-.card-raca {
+
+/* cartas do carousel (aplica a raça e classe) */
+.card-deck, .card-raca{
   position: relative; border-radius: 16px; border: 1px solid rgba(255,255,255,.14);
   background: rgba(14,14,16,.9); color:#f4f4f5;
   aspect-ratio: 3/4; overflow:hidden; display:grid; place-items:center;
   box-shadow: 0 12px 28px rgba(0,0,0,.35);
 }
-.card-raca img { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.04) saturate(1.02); }
-.card-raca .name {
+.card-deck img, .card-raca img{
+  width: 100%; height: 100%;
+  object-fit: contain;        /* <- não corta a arte */
+  padding: 6px; box-sizing: border-box;
+  background: rgba(255,255,255,.02);
+}
+.card-deck .name, .card-raca .name{
   position:absolute; left:10px; bottom:10px;
-  font-weight: 900; background: #d4af37; color:#121212; padding: 4px 8px; border-radius: 10px; border: 1px solid #c29b2e;
+  font-weight: 900; background: #d4af37; color:#121212;
+  padding: 4px 8px; border-radius: 10px; border: 1px solid #c29b2e;
 }
-.card-raca .noimg { width:100%; height:100%; display:grid; place-items:center; font-size:2rem; color:#d6d6de; }
-.card-raca .noimg.big { font-size:2.6rem; }
+.card-deck .noimg, .card-raca .noimg{ width:100%; height:100%; display:grid; place-items:center; font-size:2rem; color:#d6d6de; }
+.card-deck .noimg.big, .card-raca .noimg.big{ font-size:2.6rem; }
 
-.card-raca.side { transform: scale(.9); opacity:.85; }
-.card-raca.side.left  { rotate: -4deg; }
-.card-raca.side.right { rotate: 4deg; }
-.card-raca.main { transform: scale(1.02); border-color:#e6bd3b; }
+.card-deck.side, .card-raca.side { transform: scale(.9); opacity:.85; }
+.card-deck.side.left, .card-raca.side.left  { rotate: -4deg; }
+.card-deck.side.right, .card-raca.side.right { rotate: 4deg; }
+.card-deck.main, .card-raca.main { transform: scale(1.02); border-color:#e6bd3b; }
 
-.select-btn {
-  position:absolute; right: 10px; top: 10px;
-}
+.select-btn { position:absolute; right: 10px; top: 10px; }
 
 .nav {
   position:absolute; top: 50%; transform: translateY(-50%);
@@ -111,27 +139,28 @@ h2 span { color: #e6bd3b; }
 .nav.right { right: 6px; }
 .close-deck { position:absolute; top: 6px; right: 6px; }
 
-.raca-info {
-  margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08);
-}
+/* ===== Resumos (raça/classe) ===== */
+.pick-info, .raca-info { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); }
 .r-head { display:flex; gap:10px; align-items:center; }
 .thumb { width:44px; height:44px; border-radius:12px; overflow:hidden; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); display:grid; place-items:center; }
 .thumb img { width:100%; height:100%; object-fit:cover; }
 .r-title { font-weight:900; }
 .r-desc { color:#c8c8d0; font-size:.95rem; }
 .r-habs { display:grid; gap:8px; margin-top: 10px; }
+.subhead { font-weight:900; margin:6px 0 2px; }
 .hab { border: 1px solid rgba(255,255,255,.14); border-radius:12px; padding:8px; background: rgba(255,255,255,.03); }
 .h-nome { font-weight:800; margin-bottom: 2px; }
 .h-desc { color:#d6d6de; }
 
+/* ações */
 .actions { margin-top: 14px; display:flex; justify-content:flex-end; }
 
-/* tips */
+/* dicas */
 .tips-card h4 { margin: 0 0 8px; font-weight:900; }
 .tips-card ul { margin: 0; padding-left: 18px; color:#d6d6de; }
 .tips-card li + li { margin-top: 6px; }
 
-/* Botões base */
+/* botões */
 .btn {
   display:inline-flex; align-items:center; justify-content:center;
   padding:10px 16px; border-radius:14px; border:1px solid transparent;
@@ -144,71 +173,13 @@ h2 span { color: #e6bd3b; }
 .btn-ghost { background:transparent; color:#f4f4f5; border-color:rgba(255,255,255,.18); }
 .btn-ghost:hover { background:rgba(255,255,255,.06); }
 
+/* responsivo */
 @media (max-width: 900px) {
   .grid { grid-template-columns: 1fr; }
   .tips-card { order: -1; }
+  .decks-row { grid-template-columns: 1fr; }
 }
-/* centraliza toda a área da escolha de raça */
-.race-picker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* baralho fechado centralizado e com largura conhecida */
-.deck-stack {
-  width: clamp(260px, 70%, 360px);
-  margin: 10px auto;
-}
-
-/* as “cartas” sobrepostas agora aceitam imagem de fundo */
-.stack {
-  position: absolute;
-  width: 130px; height: 180px; border-radius: 14px;
-  background: rgba(255,255,255,.06);
-  background-size: cover;
-  background-position: center;
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow: 0 6px 20px rgba(0,0,0,.25);
-  z-index: 1;
-}
-/* leve véu para o texto do rótulo ainda ter contraste */
-.deck-stack::after {
-  content: "";
-  position: absolute; inset: 0;
-  border-radius: 16px;
-  background: radial-gradient(transparent 60%, rgba(0,0,0,.35));
-  z-index: 1;
-}
-.deck-label { position: relative; z-index: 2; }
-
-/* ajustes finos nas posições das 3 cartas */
-.stack.one  { transform: rotate(-8deg) translate(-34px, -6px); }
-.stack.two  { transform: rotate( 4deg) translate(  6px,  8px); }
-.stack.three{ transform: rotate(12deg) translate( 40px, -6px); }
-
-/* deck aberto também centralizado e com largura máxima */
-.deck-open {
-  position: relative;
-  padding: 8px 36px;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 14px;
-  margin: 8px auto;
-  max-width: 760px;
-}
-
-/* mantém as 3 cartas alinhadas no centro */
-.deck-open .cards {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr 1fr;
-  align-items: end;
-  gap: 10px;
-  justify-items: center;
-}
-
-/* responsivo */
 @media (max-width: 600px) {
-  .deck-stack { width: 90%; }
-  .deck-open { padding: 8px 28px; max-width: 100%; }
+  .deck-open { padding: 8px 28px; }
   .nav { width: 32px; height: 32px; }
 }
