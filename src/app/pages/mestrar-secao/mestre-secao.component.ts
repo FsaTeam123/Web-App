@@ -155,18 +155,18 @@ export class MestreSecaoComponent implements OnInit {
     this.isSubmitting = true;
     try{
       const jogo = await firstValueFrom(this.http.post<any>(API_ENDPOINTS.jogos, payload));
-      console.log('Sessão criada:', jogo);
 
       // se for classes específicas, cria vínculos
       if (payload.isEspecificClass === 1 && this.selectedIds.size > 0){
         console.log('Vinculando classes:', Array.from(this.selectedIds), 'ao jogo', jogo);
         const idJogo = jogo?.idJogo;
+        console.log('ID do jogo criado:', idJogo);
+        console.log('Posts a serem enviados:', Array.from(this.selectedIds).map(idClasse => ({ idClasse, idJogo })));
         const posts = Array.from(this.selectedIds).map(idClasse =>
           this.http.post(API_ENDPOINTS.classeJogo, { idClasse, idJogo })
         );
-        console.log('Posts a serem feitos:', posts);
         // dispara todos e espera
-        //await firstValueFrom((await import('rxjs')).forkJoin(posts));
+        await firstValueFrom((await import('rxjs')).forkJoin(posts));
       }
 
       this.successMsg = 'Sua sessão foi criada com sucesso! Redirecionando...';

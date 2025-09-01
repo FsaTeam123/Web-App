@@ -4,6 +4,8 @@ import { LoginComponent } from './pages/login/login.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { EsqueciSenhaComponent } from './pages/esqueci-senha/esqueci-senha.component';
 import { InicioComponent } from './pages/inicio/inicio.component';
+import { EntrarSecaoComponent } from './pages/entrar-secao/entrar-secao.component';
+import { CriarPersonagemComponent } from './pages/criar-personagem/criar-personagem.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -15,5 +17,7 @@ export const routes: Routes = [
   { path: 'mestre-secao', loadComponent: () => import('./pages/mestrar-secao/mestre-secao.component').then(m => m.MestreSecaoComponent) },
   { path: 'minhas-sessoes', loadComponent: () => import('./pages/minhas-sessoes/minhas-sessoes.component').then(m => m.MinhasSessoesComponent) },
   { path: 'inicio-sessao', loadComponent: () => import('./pages/inicio-sessao/inicio-sessao.component').then(m => m.InicioSessaoComponent)},
+  { path: 'entrar-secao', component: EntrarSecaoComponent },
+  { path: 'criar-personagem', component: CriarPersonagemComponent },
   { path: '**', redirectTo: '' },
 ];

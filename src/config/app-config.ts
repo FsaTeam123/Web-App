@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://t7tsd4gbsd.execute-api.sa-east-1.amazonaws.com'; // REST base
+export const API_BASE_URL = 'http://localhost:8085'; // REST base
 
 // REST endpoints
 export const API_ENDPOINTS = {
@@ -16,10 +16,9 @@ export const API_ENDPOINTS = {
   estilosCampanha: `${API_BASE_URL}/estilos-campanha`,
   historias: `${API_BASE_URL}/historia`,
   temas: `${API_BASE_URL}/temas`,
+  racas: `${API_BASE_URL}/racas`,
   jogosPorMestre: (id: number) => `${API_BASE_URL}/jogos/user/mestrado/${id}`,
   jogosPorJogador: (id: number) => `${API_BASE_URL}/jogos/user/jogador/${id}`,
-
-  // <<< NOVO >>>
   playersPorJogo: (idJogo: number) => `${API_BASE_URL}/players/jogo/${idJogo}`,
 };
 

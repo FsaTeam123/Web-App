@@ -1,0 +1,185 @@
+/* src/app/pages/criar-personagem/criar-personagem.component.css */
+:host {
+  display: block;
+  min-height: 100dvh;
+  color: #f4f4f5;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
+}
+
+.wrap { padding: clamp(16px, 2.6vw, 28px); max-width: 1100px; margin: 0 auto; }
+h2 {
+  margin: 0 0 16px;
+  font-size: clamp(1.4rem, 4.5vw, 2.6rem);
+  font-weight: 900; letter-spacing: .3px; text-align: center;
+}
+h2 span { color: #e6bd3b; }
+.erro { color: #ff8a8a; margin-bottom: 12px; }
+
+/* ===== layout principal ===== */
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+}
+.card {
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(20,20,22,.92);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.25);
+}
+
+/* form */
+.form-card h3 { margin: 4px 0 10px; font-weight: 900; }
+.lbl { display:block; margin: 8px 0 6px; color: #d6d6de; }
+.input {
+  width:100%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #f5f5f7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+}
+.divider { height: 1px; background: rgba(255,255,255,.08); margin: 12px 0; }
+
+.avatar-row { display:flex; align-items:center; gap:12px; }
+.avatar { width:64px; height:64px; border-radius:50%; overflow:hidden; border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); display:grid; place-items:center; }
+.avatar img { width:100%; height:100%; object-fit:cover; }
+.avatar.placeholder { font-weight:900; color:#d6d6de; }
+.file-btn { position: relative; overflow: hidden; }
+.file-btn input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+/* ===== DOIS DECKS LADO A LADO ===== */
+.decks-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+  align-items:start;
+}
+.deck-area { display:flex; flex-direction:column; gap:10px; }
+.area-title { font-weight:900; opacity:.95; }
+
+/* centraliza e limita a largura dos decks */
+.deck-stack, .deck-open { width: min(460px, 100%); margin: 0 auto; }
+
+/* --- Deck fechado (pilha) --- */
+.deck-stack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 180px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,.22);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  cursor: pointer;
+}
+.stack{
+  position: absolute; width: 130px; height: 180px; border-radius: 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 6px 20px rgba(0,0,0,.25);
+
+  /* mostra a arte inteira das cartas */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.stack.one  { transform: rotate(-8deg) translate(-34px, -6px); }
+.stack.two  { transform: rotate( 4deg) translate(  6px,  8px); }
+.stack.three{ transform: rotate(12deg) translate( 40px, -6px); }
+
+.deck-label { position: relative; text-align:center; z-index: 2; }
+.deck-label .t { font-weight:900; }
+.deck-label .s { color:#d6d6de; font-size:.9rem; }
+
+/* --- Deck aberto (carousel) --- */
+.deck-open { position: relative; padding: 8px 36px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; }
+.deck-open .cards{
+  display:grid; grid-template-columns: 1fr 1.1fr 1fr;
+  align-items:end; gap:10px; justify-items:center;
+}
+
+/* cartas do carousel (aplica a raça e classe) */
+.card-deck, .card-raca{
+  position: relative; border-radius: 16px; border: 1px solid rgba(255,255,255,.14);
+  background: rgba(14,14,16,.9); color:#f4f4f5;
+  aspect-ratio: 3/4; overflow:hidden; display:grid; place-items:center;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+.card-deck img, .card-raca img{
+  width: 100%; height: 100%;
+  object-fit: contain;        /* <- não corta a arte */
+  padding: 6px; box-sizing: border-box;
+  background: rgba(255,255,255,.02);
+}
+.card-deck .name, .card-raca .name{
+  position:absolute; left:10px; bottom:10px;
+  font-weight: 900; background: #d4af37; color:#121212;
+  padding: 4px 8px; border-radius: 10px; border: 1px solid #c29b2e;
+}
+.card-deck .noimg, .card-raca .noimg{ width:100%; height:100%; display:grid; place-items:center; font-size:2rem; color:#d6d6de; }
+.card-deck .noimg.big, .card-raca .noimg.big{ font-size:2.6rem; }
+
+.card-deck.side, .card-raca.side { transform: scale(.9); opacity:.85; }
+.card-deck.side.left, .card-raca.side.left  { rotate: -4deg; }
+.card-deck.side.right, .card-raca.side.right { rotate: 4deg; }
+.card-deck.main, .card-raca.main { transform: scale(1.02); border-color:#e6bd3b; }
+
+.select-btn { position:absolute; right: 10px; top: 10px; }
+
+.nav {
+  position:absolute; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border-radius: 999px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22);
+  color:#f4f4f5; cursor:pointer;
+}
+.nav:hover { background: rgba(255,255,255,.16); }
+.nav.left { left: 6px; }
+.nav.right { right: 6px; }
+.close-deck { position:absolute; top: 6px; right: 6px; }
+
+/* ===== Resumos (raça/classe) ===== */
+.pick-info, .raca-info { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+.r-head { display:flex; gap:10px; align-items:center; }
+.thumb { width:44px; height:44px; border-radius:12px; overflow:hidden; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); display:grid; place-items:center; }
+.thumb img { width:100%; height:100%; object-fit:cover; }
+.r-title { font-weight:900; }
+.r-desc { color:#c8c8d0; font-size:.95rem; }
+.r-habs { display:grid; gap:8px; margin-top: 10px; }
+.subhead { font-weight:900; margin:6px 0 2px; }
+.hab { border: 1px solid rgba(255,255,255,.14); border-radius:12px; padding:8px; background: rgba(255,255,255,.03); }
+.h-nome { font-weight:800; margin-bottom: 2px; }
+.h-desc { color:#d6d6de; }
+
+/* ações */
+.actions { margin-top: 14px; display:flex; justify-content:flex-end; }
+
+/* dicas */
+.tips-card h4 { margin: 0 0 8px; font-weight:900; }
+.tips-card ul { margin: 0; padding-left: 18px; color:#d6d6de; }
+.tips-card li + li { margin-top: 6px; }
+
+/* botões */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 16px; border-radius:14px; border:1px solid transparent;
+  font-weight:700; color:#f4f4f5; text-decoration:none; white-space:nowrap;
+  transition: transform .12s, box-shadow .12s, background-color .12s, border-color .12s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background:#d4af37; color:#121212; border-color:#c29b2e; box-shadow:0 6px 18px rgba(212,175,55,.2); }
+.btn-primary:hover { background:#e6bd3b; border-color:#e6bd3b; }
+.btn-ghost { background:transparent; color:#f4f4f5; border-color:rgba(255,255,255,.18); }
+.btn-ghost:hover { background:rgba(255,255,255,.06); }
+
+/* responsivo */
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+  .tips-card { order: -1; }
+  .decks-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .deck-open { padding: 8px 28px; }
+  .nav { width: 32px; height: 32px; }
+}

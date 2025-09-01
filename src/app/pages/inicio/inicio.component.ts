@@ -15,5 +15,5 @@ import { AppHeaderComponentFix } from '../../shared/ui/app-header-fixo/app-heade
 export class InicioComponent {
   siteName = 'Reinos Perdidos RPG';
   teamName = 'Equipe FSA RPG';
-  useAltBackground = true;
+  useAltBackground = true; 
 }
