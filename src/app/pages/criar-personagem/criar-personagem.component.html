@@ -68,7 +68,7 @@
 
         <div class="divider"></div>
 
-        <!-- ====== DOIS DECKS LADO A LADO ====== -->
+        <!-- ====== DOIS DECKS LADO A LADO (RAÇA/CLASSE) ====== -->
         <div class="decks-row">
           <!-- R A Ç A -->
           <div class="deck-area">
@@ -208,6 +208,132 @@
                 <div class="hab" *ngFor="let p of c.pericias">
                   <div class="h-nome">{{ p.nome }}</div>
                   <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- (opcional) separador visual -->
+        <div class="divider"></div>
+
+        <!-- ====== DOIS DECKS LADO A LADO (ORIGEM/DIVINDADE) ====== -->
+        <div class="decks-row">
+          <!-- O R I G E M -->
+          <div class="deck-area">
+            <div class="area-title">Origem</div>
+
+            <!-- Fechado -->
+            <button *ngIf="!deckOpenOrigem" class="deck-stack" (click)="openOrigemDeck()">
+              <div class="stack one"
+                   [style.backgroundImage]="imgSrcOrigem(origens[leftIndexOrigem()]) ? 'url(' + imgSrcOrigem(origens[leftIndexOrigem()]) + ')' : ''"></div>
+              <div class="stack two"
+                   [style.backgroundImage]="imgSrcOrigem(origens[currentOrigem]) ? 'url(' + imgSrcOrigem(origens[currentOrigem]) + ')' : ''"></div>
+              <div class="stack three"
+                   [style.backgroundImage]="imgSrcOrigem(origens[rightIndexOrigem()]) ? 'url(' + imgSrcOrigem(origens[rightIndexOrigem()]) + ')' : ''"></div>
+              <div class="deck-label">
+                <div class="t">Escolher Origem</div>
+                <div class="s">{{ selectedOrigem?.nome || 'Toque para abrir' }}</div>
+              </div>
+            </button>
+
+            <!-- Aberto -->
+            <div *ngIf="deckOpenOrigem" class="deck-open">
+              <button class="nav left" (click)="prevOrigem()" aria-label="Anterior">‹</button>
+
+              <div class="cards">
+                <div class="card-deck side left" *ngIf="origens.length">
+                  <img *ngIf="imgSrcOrigem(origens[leftIndexOrigem()]) as soL; else noImgOL" [src]="soL" [alt]="origens[leftIndexOrigem()].nome">
+                  <ng-template #noImgOL><div class="noimg">{{ origens[leftIndexOrigem()].nome[0] || 'O' }}</div></ng-template>
+                  <div class="name">{{ origens[leftIndexOrigem()].nome }}</div>
+                </div>
+
+                <div class="card-deck main" *ngIf="origens.length">
+                  <img *ngIf="imgSrcOrigem(origens[currentOrigem]) as soC; else noImgOC" [src]="soC" [alt]="origens[currentOrigem].nome">
+                  <ng-template #noImgOC><div class="noimg big">{{ origens[currentOrigem].nome[0] || 'O' }}</div></ng-template>
+                  <div class="name">{{ origens[currentOrigem].nome }}</div>
+                  <button class="btn btn-primary select-btn" (click)="chooseCurrentOrigem()">Selecionar</button>
+                </div>
+
+                <div class="card-deck side right" *ngIf="origens.length">
+                  <img *ngIf="imgSrcOrigem(origens[rightIndexOrigem()]) as soR; else noImgOR" [src]="soR" [alt]="origens[rightIndexOrigem()].nome">
+                  <ng-template #noImgOR><div class="noimg">{{ origens[rightIndexOrigem()].nome[0] || 'O' }}</div></ng-template>
+                  <div class="name">{{ origens[rightIndexOrigem()].nome }}</div>
+                </div>
+              </div>
+
+              <button class="nav right" (click)="nextOrigem()" aria-label="Próxima">›</button>
+              <button class="icon-btn close-deck" (click)="closeOrigemDeck()" aria-label="Fechar">✕</button>
+            </div>
+
+            <!-- Resumo Origem -->
+            <div *ngIf="selectedOrigem as o" class="pick-info">
+              <div class="r-head">
+                <div class="thumb" *ngIf="imgSrcOrigem(o) as so; else ntO"><img [src]="so" [alt]="o.nome" /></div>
+                <ng-template #ntO><div class="thumb noimg">{{ o.nome[0] || 'O' }}</div></ng-template>
+                <div>
+                  <div class="r-title">{{ o.nome }}</div>
+                  <div class="r-desc" *ngIf="o.descricao">{{ o.descricao }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- D I V I N D A D E -->
+          <div class="deck-area">
+            <div class="area-title">Divindade</div>
+
+            <!-- Fechado -->
+            <button *ngIf="!deckOpenDivindade" class="deck-stack" (click)="openDivDeck()">
+              <div class="stack one"
+                   [style.backgroundImage]="imgSrcDivindade(divindades[leftIndexDiv()]) ? 'url(' + imgSrcDivindade(divindades[leftIndexDiv()]) + ')' : ''"></div>
+              <div class="stack two"
+                   [style.backgroundImage]="imgSrcDivindade(divindades[currentDiv]) ? 'url(' + imgSrcDivindade(divindades[currentDiv]) + ')' : ''"></div>
+              <div class="stack three"
+                   [style.backgroundImage]="imgSrcDivindade(divindades[rightIndexDiv()]) ? 'url(' + imgSrcDivindade(divindades[rightIndexDiv()]) + ')' : ''"></div>
+              <div class="deck-label">
+                <div class="t">Escolher Divindade</div>
+                <div class="s">{{ selectedDivindade?.nome || 'Toque para abrir' }}</div>
+              </div>
+            </button>
+
+            <!-- Aberto -->
+            <div *ngIf="deckOpenDivindade" class="deck-open">
+              <button class="nav left" (click)="prevDiv()" aria-label="Anterior">‹</button>
+
+              <div class="cards">
+                <div class="card-deck side left" *ngIf="divindades.length">
+                  <img *ngIf="imgSrcDivindade(divindades[leftIndexDiv()]) as sdL; else noImgDL" [src]="sdL" [alt]="divindades[leftIndexDiv()].nome">
+                  <ng-template #noImgDL><div class="noimg">{{ divindades[leftIndexDiv()].nome[0] || 'D' }}</div></ng-template>
+                  <div class="name">{{ divindades[leftIndexDiv()].nome }}</div>
+                </div>
+
+                <div class="card-deck main" *ngIf="divindades.length">
+                  <img *ngIf="imgSrcDivindade(divindades[currentDiv]) as sdC; else noImgDC" [src]="sdC" [alt]="divindades[currentDiv].nome">
+                  <ng-template #noImgDC><div class="noimg big">{{ divindades[currentDiv].nome[0] || 'D' }}</div></ng-template>
+                  <div class="name">{{ divindades[currentDiv].nome }}</div>
+                  <button class="btn btn-primary select-btn" (click)="chooseCurrentDiv()">Selecionar</button>
+                </div>
+
+                <div class="card-deck side right" *ngIf="divindades.length">
+                  <img *ngIf="imgSrcDivindade(divindades[rightIndexDiv()]) as sdR; else noImgDR" [src]="sdR" [alt]="divindades[rightIndexDiv()].nome">
+                  <ng-template #noImgDR><div class="noimg">{{ divindades[rightIndexDiv()].nome[0] || 'D' }}</div></ng-template>
+                  <div class="name">{{ divindades[rightIndexDiv()].nome }}</div>
+                </div>
+              </div>
+
+              <button class="nav right" (click)="nextDiv()" aria-label="Próxima">›</button>
+              <button class="icon-btn close-deck" (click)="closeDivDeck()" aria-label="Fechar">✕</button>
+            </div>
+
+            <!-- Resumo Divindade -->
+            <div *ngIf="selectedDivindade as d" class="pick-info">
+              <div class="r-head">
+                <div class="thumb" *ngIf="imgSrcDivindade(d) as sd; else ntD"><img [src]="sd" [alt]="d.nome" /></div>
+                <ng-template #ntD><div class="thumb noimg">{{ d.nome[0] || 'D' }}</div></ng-template>
+                <div>
+                  <div class="r-title">{{ d.nome }}</div>
+                  <div class="r-desc" *ngIf="d.descricao">{{ d.descricao }}</div>
                 </div>
               </div>
             </div>

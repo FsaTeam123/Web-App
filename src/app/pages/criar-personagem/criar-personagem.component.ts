@@ -38,6 +38,26 @@ type Classe = {
   pericias?: Pericia[];
 };
 
+type Origem = {
+  idOrigem: number;
+  nome: string;
+  descricao?: string;
+  ativo?: number;
+  imagem?: string | null;
+  imagemContentType?: string | null;
+  imagemFilename?: string | null;
+};
+
+type Divindade = {
+  idDivindade: number;
+  nome: string;
+  descricao?: string;
+  ativo?: number;
+  imagem?: string | null;
+  imagemContentType?: string | null;
+  imagemFilename?: string | null;
+};
+
 @Component({
   selector: 'app-criar-personagem',
   standalone: true,
@@ -58,7 +78,7 @@ export class CriarPersonagemComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  showHelp = false;           // <-- NOVO
+  showHelp = false;
 
   openHelp()  { this.showHelp = true;  }
   closeHelp() { this.showHelp = false; }
@@ -88,12 +108,28 @@ export class CriarPersonagemComponent implements OnInit {
   currentClasse = 0;
   selectedClasse?: Classe;
 
+  // ===== O R I G E M =====
+  loadingOrigens = true;
+  deckOpenOrigem = false;
+  origens: Origem[] = [];
+  currentOrigem = 0;
+  selectedOrigem?: Origem;
+
+  // ===== D I V I N D A D E =====
+  loadingDivindades = true;
+  deckOpenDivindade = false;
+  divindades: Divindade[] = [];
+  currentDiv = 0;
+  selectedDivindade?: Divindade;
+
   ngOnInit(): void {
     const q = this.route.snapshot.queryParamMap.get('jogo');
     this.idJogo = q ? Number(q) : undefined;
 
     this.fetchRacas();
     this.fetchClasses();
+    this.fetchOrigens();
+    this.fetchDivindades();
   }
 
   // ---------- R A Ç A ----------
@@ -144,6 +180,54 @@ export class CriarPersonagemComponent implements OnInit {
   leftIndexClasse()  { return this.classes.length ? (this.currentClasse - 1 + this.classes.length) % this.classes.length : 0; }
   rightIndexClasse() { return this.classes.length ? (this.currentClasse + 1) % this.classes.length : 0; }
 
+  // ---------- O R I G E M ----------
+  fetchOrigens() {
+    this.loadingOrigens = true;
+    this.http.get<Origem[]>(API_ENDPOINTS.origens).subscribe({
+      next: (arr) => {
+        this.origens = Array.isArray(arr) ? arr : [];
+        this.currentOrigem = 0;
+        this.loadingOrigens = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar as origens.';
+        this.loadingOrigens = false;
+      }
+    });
+  }
+
+  openOrigemDeck()  { if (!this.deckOpenOrigem) this.deckOpenOrigem = true; }
+  closeOrigemDeck() { this.deckOpenOrigem = false; }
+  prevOrigem() { if (this.origens.length) this.currentOrigem = (this.currentOrigem - 1 + this.origens.length) % this.origens.length; }
+  nextOrigem() { if (this.origens.length) this.currentOrigem = (this.currentOrigem + 1) % this.origens.length; }
+  chooseCurrentOrigem() { if (this.origens.length) { this.selectedOrigem = this.origens[this.currentOrigem]; this.deckOpenOrigem = false; } }
+  leftIndexOrigem()  { return this.origens.length ? (this.currentOrigem - 1 + this.origens.length) % this.origens.length : 0; }
+  rightIndexOrigem() { return this.origens.length ? (this.currentOrigem + 1) % this.origens.length : 0; }
+
+  // ---------- D I V I N D A D E ----------
+  fetchDivindades() {
+    this.loadingDivindades = true;
+    this.http.get<Divindade[]>(API_ENDPOINTS.divindades).subscribe({
+      next: (arr) => {
+        this.divindades = Array.isArray(arr) ? arr : [];
+        this.currentDiv = 0;
+        this.loadingDivindades = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar as divindades.';
+        this.loadingDivindades = false;
+      }
+    });
+  }
+
+  openDivDeck()  { if (!this.deckOpenDivindade) this.deckOpenDivindade = true; }
+  closeDivDeck() { this.deckOpenDivindade = false; }
+  prevDiv() { if (this.divindades.length) this.currentDiv = (this.currentDiv - 1 + this.divindades.length) % this.divindades.length; }
+  nextDiv() { if (this.divindades.length) this.currentDiv = (this.currentDiv + 1) % this.divindades.length; }
+  chooseCurrentDiv() { if (this.divindades.length) { this.selectedDivindade = this.divindades[this.currentDiv]; this.deckOpenDivindade = false; } }
+  leftIndexDiv()  { return this.divindades.length ? (this.currentDiv - 1 + this.divindades.length) % this.divindades.length : 0; }
+  rightIndexDiv() { return this.divindades.length ? (this.currentDiv + 1) % this.divindades.length : 0; }
+
   // ---------- IMG helpers ----------
   imgSrcRaca(r?: Raca): string | null {
     if (!r) return null;
@@ -151,7 +235,7 @@ export class CriarPersonagemComponent implements OnInit {
     if (!raw) return null;
     if (/^data:.*;base64,/i.test(raw)) return raw.replace(/\s/g, '');
     const mime = r.fotoMime || r.imagemContentType || 'image/png';
-    return `data:${mime};base64,${raw.replace(/\s/g, '')}`;
+    return `data:${mime};base64,${(raw || '').replace(/\s/g, '')}`;
   }
 
   imgSrcClasse(c?: Classe): string | null {
@@ -161,6 +245,22 @@ export class CriarPersonagemComponent implements OnInit {
     const mime = c.imagemContentType || 'image/png';
     if (/^data:.*;base64,/i.test(b64)) return b64;
     return `data:${mime};base64,${b64}`;
+  }
+
+  imgSrcOrigem(o?: Origem): string | null {
+    if (!o || !o.imagem) return null;
+    const raw = (o.imagem || '').replace(/\s/g, '');
+    const mime = o.imagemContentType || 'image/png';
+    if (/^data:.*;base64,/i.test(raw)) return raw;
+    return `data:${mime};base64,${raw}`;
+  }
+
+  imgSrcDivindade(d?: Divindade): string | null {
+    if (!d || !d.imagem) return null;
+    const raw = (d.imagem || '').replace(/\s/g, '');
+    const mime = d.imagemContentType || 'image/png';
+    if (/^data:.*;base64,/i.test(raw)) return raw;
+    return `data:${mime};base64,${raw}`;
   }
 
   // foto do personagem (arquivo -> base64)
@@ -182,15 +282,20 @@ export class CriarPersonagemComponent implements OnInit {
     if (!this.nome.trim()) { this.erro = 'Informe um nome para o personagem.'; return; }
     if (!this.selectedRaca) { this.erro = 'Escolha uma raça.'; return; }
     if (!this.selectedClasse) { this.erro = 'Escolha uma classe.'; return; }
+    // Origem/Divindade são opcionais (podem ser obrigatórias se quiser)
+
     this.erro = '';
 
-    this.router.navigate(['/criar-personagem/classe'], {
-      queryParams: {
-        jogo: this.idJogo,
-        nome: this.nome,
-        raca: this.selectedRaca?.idRaca,
-        classe: this.selectedClasse?.idClasse
-      }
-    });
+    const queryParams: any = {
+      jogo: this.idJogo,
+      nome: this.nome,
+      raca: this.selectedRaca?.idRaca,
+      classe: this.selectedClasse?.idClasse
+    };
+
+    if (this.selectedOrigem)    queryParams.origem    = this.selectedOrigem.idOrigem;
+    if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;
+
+    this.router.navigate(['/criar-personagem/classe'], { queryParams });
   }
-}
+};
