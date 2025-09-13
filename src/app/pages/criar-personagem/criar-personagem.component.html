@@ -68,6 +68,128 @@
 
         <div class="divider"></div>
 
+        <!-- ====== ATRIBUTOS (acima de Raça/Classe) ====== -->
+        <div class="attr-strip" role="group" aria-label="Atributos">
+          <div class="attr">
+            <div class="abbr">FOR</div>
+            <input class="attr-input"
+                  inputmode="decimal"
+                  maxlength="5"
+                  placeholder="00"
+                  pattern="^(0?[1-9]|[1-9][0-9])([.,][0-9]{1,2})?$"
+                  aria-label="Força"
+                  [(ngModel)]="attrs.forca"
+                  (input)="onAttrInput('forca', $event)">
+          </div>
+
+          <div class="attr">
+            <div class="abbr">DES</div>
+            <input class="attr-input"
+                  inputmode="decimal"
+                  maxlength="5"
+                  placeholder="00"
+                  pattern="^(0?[1-9]|[1-9][0-9])([.,][0-9]{1,2})?$"
+                  aria-label="Destreza"
+                  [(ngModel)]="attrs.destreza"
+                  (input)="onAttrInput('destreza', $event)">
+          </div>
+
+          <div class="attr">
+            <div class="abbr">CON</div>
+            <input class="attr-input"
+                  inputmode="decimal"
+                  maxlength="5"
+                  placeholder="00"
+                  pattern="^(0?[1-9]|[1-9][0-9])([.,][0-9]{1,2})?$"
+                  aria-label="Constituição"
+                  [(ngModel)]="attrs.constituicao"
+                  (input)="onAttrInput('constituicao', $event)">
+          </div>
+
+          <div class="attr">
+            <div class="abbr">SAB</div>
+            <input class="attr-input"
+                  inputmode="decimal"
+                  maxlength="5"
+                  placeholder="00"
+                  pattern="^(0?[1-9]|[1-9][0-9])([.,][0-9]{1,2})?$"
+                  aria-label="Sabedoria"
+                  [(ngModel)]="attrs.sabedoria"
+                  (input)="onAttrInput('sabedoria', $event)">
+          </div>
+
+          <div class="attr">
+            <div class="abbr">INT</div>
+            <input class="attr-input"
+                  inputmode="decimal"
+                  maxlength="5"
+                  placeholder="00"
+                  pattern="^(0?[1-9]|[1-9][0-9])([.,][0-9]{1,2})?$"
+                  aria-label="Inteligência"
+                  [(ngModel)]="attrs.inteligencia"
+                  (input)="onAttrInput('inteligencia', $event)">
+          </div>
+
+          <div class="attr">
+            <div class="abbr">CAR</div>
+            <input class="attr-input"
+                  inputmode="decimal"
+                  maxlength="5"
+                  placeholder="00"
+                  pattern="^(0?[1-9]|[1-9][0-9])([.,][0-9]{1,2})?$"
+                  aria-label="Carisma"
+                  [(ngModel)]="attrs.carisma"
+                  (input)="onAttrInput('carisma', $event)">
+          </div>
+        </div>
+
+        <!-- ====== VIDA & MANA (abaixo dos símbolos) ====== -->
+        <div class="vitals-strip" role="group" aria-label="Recursos de Vida e Mana">
+          <!-- VIDA -->
+          <div class="vital">
+            <div class="vital-icon" aria-hidden="true">
+              <!-- Coração (SVG inline) -->
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#e85656" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.1 21.35l-1.1-1.01C5.14 15.28 2 12.36 2 8.99 2 6.42 4.05 4.5 6.6 4.5c1.5 0 2.94.7 3.9 1.8 0.96-1.1 2.4-1.8 3.9-1.8C17.95 4.5 20 6.42 20 8.99c0 3.37-3.14 6.29-8.9 11.35l-1 1.01z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="label">Vida</div>
+              <input class="vital-input"
+                    inputmode="numeric"
+                    maxlength="3"
+                    placeholder="000"
+                    pattern="^\d{1,3}$"
+                    aria-label="Vida (000-999)"
+                    [(ngModel)]="vitals.pv"
+                    (input)="onVitalInput('pv', $event)"
+                    (blur)="onVitalBlur('pv')">
+            </div>
+          </div>
+
+          <!-- MANA -->
+          <div class="vital">
+            <div class="vital-icon" aria-hidden="true">
+              <!-- Poção (SVG inline) -->
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#5fb0ff" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 3h-4v2.17l-1.76 1.76a2 2 0 00-.59 1.41V10l-2.06 3.43A4 4 0 005.2 18l1.44 1.8A4 4 0 009.85 21h4.3a4 4 0 003.21-1.2L18.8 18a4 4 0 00.2-4.57L17 10V8.34c0-.53-.21-1.04-.59-1.41L14 5.17V3zm-2 4.41l2 2V10H10V9.41l2-2zM8.5 12h7l1.2 2a2 2 0 01-.1 2.28l-1.44 1.8a2 2 0 01-1.54.72h-4.3a2 2 0 01-1.54-.72L6.34 16.3A2 2 0 016.24 14l2.26-2z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="label">Mana</div>
+              <input class="vital-input"
+                    inputmode="numeric"
+                    maxlength="3"
+                    placeholder="000"
+                    pattern="^\d{1,3}$"
+                    aria-label="Mana (000-999)"
+                    [(ngModel)]="vitals.pm"
+                    (input)="onVitalInput('pm', $event)"
+                    (blur)="onVitalBlur('pm')">
+            </div>
+          </div>
+        </div>
+
         <!-- ====== DOIS DECKS LADO A LADO (RAÇA/CLASSE) ====== -->
         <div class="decks-row">
           <!-- R A Ç A -->
@@ -335,6 +457,84 @@
                   <div class="r-title">{{ d.nome }}</div>
                   <div class="r-desc" *ngIf="d.descricao">{{ d.descricao }}</div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== BOLSA (Tibares) ====== -->
+        <div class="pouch-box" role="group" aria-label="Bolsa de Tibares">
+          <div class="pouch-title">
+            <!-- ícone de bolsa -->
+            <span class="bag" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#d4af37" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 4c0-1.1.9-2 2-2h4a2 2 0 012 2v1h1a2 2 0 012 2v2H5V7a2 2 0 012-2h1V4zM5 10h14l-1.3 9.1A4 4 0 0113.75 23h-3.5A4 4 0 016.3 19.1L5 10z"/>
+              </svg>
+            </span>
+            Bolsa
+          </div>
+
+          <div class="tibares-grid">
+            <!-- OURO -->
+            <div class="coin">
+              <div class="coin-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#d4af37" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6" fill="#121212"/>
+                </svg>
+              </div>
+              <div>
+                <div class="label">Ouro</div>
+                <input class="coin-input"
+                      inputmode="numeric"
+                      maxlength="4"
+                      placeholder="0000"
+                      pattern="^\d{1,4}$"
+                      aria-label="Moedas de ouro (0000-9999)"
+                      [(ngModel)]="tibares.ouro"
+                      (input)="onTibarInput('ouro', $event)"
+                      (blur)="onTibarBlur('ouro')">
+              </div>
+            </div>
+
+            <!-- PRATA -->
+            <div class="coin">
+              <div class="coin-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#d0d4db" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6" fill="#121212"/>
+                </svg>
+              </div>
+              <div>
+                <div class="label">Prata</div>
+                <input class="coin-input"
+                      inputmode="numeric"
+                      maxlength="4"
+                      placeholder="0000"
+                      pattern="^\d{1,4}$"
+                      aria-label="Moedas de prata (0000-9999)"
+                      [(ngModel)]="tibares.prata"
+                      (input)="onTibarInput('prata', $event)"
+                      (blur)="onTibarBlur('prata')">
+              </div>
+            </div>
+
+            <!-- COBRE -->
+            <div class="coin">
+              <div class="coin-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#c27c3a" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6" fill="#121212"/>
+                </svg>
+              </div>
+              <div>
+                <div class="label">Cobre</div>
+                <input class="coin-input"
+                      inputmode="numeric"
+                      maxlength="4"
+                      placeholder="0000"
+                      pattern="^\d{1,4}$"
+                      aria-label="Moedas de cobre (0000-9999)"
+                      [(ngModel)]="tibares.cobre"
+                      (input)="onTibarInput('cobre', $event)"
+                      (blur)="onTibarBlur('cobre')">
               </div>
             </div>
           </div>

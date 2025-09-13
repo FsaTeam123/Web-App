@@ -305,3 +305,179 @@ h2 span { color: #e6bd3b; }
 .close-x:hover { background: rgba(255,255,255,.14); }
 .help-list { margin: 0; padding-left: 18px; color:#d6d6de; }
 .help-list li + li { margin-top: 6px; }
+
+/* ===== Atributos (FOR, DES, CON, SAB, INT, CAR) ===== */
+.attr-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(84px, 1fr));
+  gap: 12px;
+  margin: 8px 0 12px;
+  align-items: center;
+}
+
+.attr {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 10px 24px rgba(0,0,0,.28);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.attr .abbr {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 900;
+  font-size: .8rem;
+  background: #d4af37;
+  color: #121212;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid #c29b2e;
+  letter-spacing: .3px;
+}
+
+.attr-input {
+  width: 70%;
+  max-width: 68px;
+  height: 44px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 1.15rem;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.28);
+  color: #f4f4f5;
+  border-radius: 12px;
+  outline: none;
+}
+.attr-input::placeholder { color: #bdbdc6; }
+.attr-input:focus {
+  border-color: #e6bd3b;
+  box-shadow: 0 0 0 2px rgba(212,175,55,.35);
+}
+
+/* responsivo p/ atributos */
+@media (max-width: 900px) {
+  .attr-strip { grid-template-columns: repeat(3, minmax(84px, 1fr)); }
+}
+@media (max-width: 520px) {
+  .attr-input { max-width: 74px; height: 40px; font-size: 1.05rem; }
+}
+
+/* ===== Vida & Mana (abaixo dos atributos) ===== */
+.vitals-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 6px 0 14px;
+  align-items: center;
+}
+.vital {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  background: rgba(14,14,16,.9);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.28);
+}
+.vital-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.18);
+}
+.vital .label {
+  font-weight: 900; margin-bottom: 4px;
+}
+.vital-input {
+  width: 96px; max-width: 110px; height: 44px;
+  text-align: center; font-weight: 900; font-size: 1.15rem;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.28);
+  color: #f4f4f5; border-radius: 12px; outline: none;
+}
+.vital-input::placeholder { color: #bdbdc6; }
+.vital-input:focus {
+  border-color: #e6bd3b;
+  box-shadow: 0 0 0 2px rgba(212,175,55,.35);
+}
+
+/* responsivo */
+@media (max-width: 700px) {
+  .vitals-strip { grid-template-columns: 1fr; }
+}
+
+/* ===== Bolsa (Tibares) ===== */
+.pouch-box {
+  margin: 10px 0 14px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(14,14,16,.9);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.28);
+}
+
+.pouch-title {
+  font-weight: 900;
+  margin: 0 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pouch-title .bag {
+  width: 22px; height: 22px;
+  display: inline-block;
+}
+
+.tibares-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.coin {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  background: rgba(20,20,22,.92);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.coin-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.18);
+}
+
+.coin .label { font-weight: 900; margin-bottom: 4px; }
+
+.coin-input {
+  width: 110px; max-width: 120px; height: 44px;
+  text-align: center; font-weight: 900; font-size: 1.15rem;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.28);
+  color: #f4f4f5; border-radius: 12px; outline: none;
+}
+.coin-input::placeholder { color: #bdbdc6; }
+.coin-input:focus {
+  border-color: #e6bd3b;
+  box-shadow: 0 0 0 2px rgba(212,175,55,.35);
+}
+
+@media (max-width: 900px) {
+  .tibares-grid { grid-template-columns: 1fr; }
+}

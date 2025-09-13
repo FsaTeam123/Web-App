@@ -122,6 +122,19 @@ export class CriarPersonagemComponent implements OnInit {
   currentDiv = 0;
   selectedDivindade?: Divindade;
 
+  attrs: { 
+    forca: string; 
+    destreza: string; 
+    constituicao: string; 
+    sabedoria: string; 
+    inteligencia: string; 
+    carisma: string;
+  } = { forca: '', destreza: '', constituicao: '', sabedoria: '', inteligencia: '', carisma: '' };
+
+  vitals: { pv: string; pm: string } = { pv: '', pm: '' };
+
+  tibares: { ouro: string; prata: string; cobre: string } = { ouro: '', prata: '', cobre: '' };
+
   ngOnInit(): void {
     const q = this.route.snapshot.queryParamMap.get('jogo');
     this.idJogo = q ? Number(q) : undefined;
@@ -131,6 +144,63 @@ export class CriarPersonagemComponent implements OnInit {
     this.fetchOrigens();
     this.fetchDivindades();
   }
+
+  onTibarInput(key: keyof typeof this.tibares, e: Event) {
+    const el = e.target as HTMLInputElement;
+    // mantém apenas dígitos e limita a 4
+    let v = (el.value || '').replace(/\D/g, '').slice(0, 4);
+    this.tibares[key] = v;
+  }
+
+  onTibarBlur(key: keyof typeof this.tibares) {
+    const v = (this.tibares[key] || '').replace(/\D/g, '');
+    // se houver valor, pad para 4 dígitos; se vazio, deixa vazio
+    this.tibares[key] = v ? v.padStart(4, '0') : '';
+  }
+
+  onVitalInput(key: keyof typeof this.vitals, e: Event) {
+    const el = e.target as HTMLInputElement;
+    // Mantém só dígitos e limita a 3
+    let v = (el.value || '').replace(/\D/g, '').slice(0, 3);
+    this.vitals[key] = v;
+  }
+
+  onVitalBlur(key: keyof typeof this.vitals) {
+    const v = (this.vitals[key] || '').replace(/\D/g, '');
+    // Se tiver valor, completa com zeros à esquerda até 3 dígitos
+    this.vitals[key] = v ? v.padStart(3, '0') : '';
+  }
+
+  onAttrInput(key: keyof typeof this.attrs, e: Event) {
+    const el = e.target as HTMLInputElement;
+    let v = (el.value || '').replace(',', '.');
+
+    // Mantém apenas dígitos e no máximo um ponto decimal
+    v = v.replace(/[^0-9.]/g, '');
+    const firstDot = v.indexOf('.');
+    if (firstDot !== -1) {
+      // remove pontos extras
+      v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+    }
+    // Limita a 2 decimais se houver ponto
+    if (firstDot !== -1) {
+      const [int, dec] = v.split('.');
+      v = int.slice(0, 2) + '.' + (dec ?? '').slice(0, 2);
+    } else {
+      // só inteiros até 2 dígitos
+      v = v.slice(0, 2);
+    }
+
+    // Não deixa passar de 99 (ou 99.99 se quiser permitir)
+    const num = parseFloat(v || '0');
+    if (!isNaN(num)) {
+      if (num > 99.99) v = '99.99';
+      if (num === 0) v = ''; // sem zero
+    }
+
+    this.attrs[key] = v;
+  }
+
 
   // ---------- R A Ç A ----------
   fetchRacas() {
@@ -282,8 +352,6 @@ export class CriarPersonagemComponent implements OnInit {
     if (!this.nome.trim()) { this.erro = 'Informe um nome para o personagem.'; return; }
     if (!this.selectedRaca) { this.erro = 'Escolha uma raça.'; return; }
     if (!this.selectedClasse) { this.erro = 'Escolha uma classe.'; return; }
-    // Origem/Divindade são opcionais (podem ser obrigatórias se quiser)
-
     this.erro = '';
 
     const queryParams: any = {
@@ -295,6 +363,19 @@ export class CriarPersonagemComponent implements OnInit {
 
     if (this.selectedOrigem)    queryParams.origem    = this.selectedOrigem.idOrigem;
     if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;
+
+    // atributos: só envia os que tiverem valor
+    Object.entries(this.attrs).forEach(([k, v]) => {
+      if (v && v.trim() !== '') queryParams[k] = v.trim();
+    });
+    
+    Object.entries(this.vitals).forEach(([k, v]) => {
+      if (v && v.trim() !== '') queryParams[k] = v.trim();
+    });
+
+    Object.entries(this.tibares).forEach(([k, v]) => {
+      if (v && v.trim() !== '') queryParams[k] = v.trim();
+    });
 
     this.router.navigate(['/criar-personagem/classe'], { queryParams });
   }
