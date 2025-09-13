@@ -1,4 +1,25 @@
 <!-- src/app/pages/criar-personagem/criar-personagem.component.html -->
+<div *ngIf="showHelp"
+     class="help-overlay"
+     (click)="closeHelp()"
+     (keydown.escape)="closeHelp()"
+     tabindex="-1">
+  <div class="help-modal" role="dialog" aria-modal="true" id="dicasDialog" (click)="$event.stopPropagation()">
+    <div class="help-header">
+      <h4>Dicas</h4>
+      <button class="close-x" (click)="closeHelp()" aria-label="Fechar">✕</button>
+    </div>
+    <ul class="help-list">
+      <li>O nome pode conter letras, números e apóstrofos.</li>
+      <li>Escolha a raça e a classe e veja as habilidades antes de continuar.</li>
+      <li>Você está criando para a sessão:
+        <strong *ngIf="idJogo">#{{ idJogo }}</strong>
+        <span *ngIf="!idJogo">— (sem sessão)</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
 <app-page-shell [useAltBackground]="useAltBackground">
   <app-header-fixo shell-header [siteName]="siteName" [logoSrc]="'/assets/logo-rpg.png'"></app-header-fixo>
 
@@ -10,21 +31,39 @@
     <div class="grid">
       <!-- ==== FORM PRINCIPAL ==== -->
       <div class="card form-card">
-        <h3>Identidade</h3>
+        <div class="form-header">
+          <h3>Personagem</h3>
 
-        <label class="lbl">Nome do Personagem</label>
-        <input class="input" type="text" autocomplete="off" [(ngModel)]="nome" placeholder="ex.: Arannis, Yara, Kael..." />
+          <button type="button"
+                  class="help-btn"
+                  (click)="openHelp()"
+                  aria-haspopup="dialog"
+                  aria-controls="dicasDialog"
+                  [attr.aria-expanded]="showHelp">
+            ?
+          </button>
+        </div>
 
-        <label class="lbl">Foto (opcional)</label>
-        <div class="avatar-row">
-          <div class="avatar" *ngIf="fotoB64; else noAvatar">
-            <img [src]="'data:' + (fotoMime||'image/png') + ';base64,' + fotoB64" alt="Foto do personagem" />
+        <div class="identity-grid">
+          <!-- COLUNA: FOTO -->
+          <div class="avatar-col">
+            <div class="avatar" *ngIf="fotoB64; else noAvatar">
+              <img [src]="'data:' + (fotoMime||'image/png') + ';base64,' + fotoB64" alt="Foto do personagem" />
+            </div>
+            <ng-template #noAvatar><div class="avatar placeholder">?</div></ng-template>
+
+            <label class="btn btn-ghost file-btn">
+              Imagem
+              <input type="file" accept="image/*" (change)="onFile($event)">
+            </label>
           </div>
-          <ng-template #noAvatar><div class="avatar placeholder">?</div></ng-template>
-          <label class="btn btn-ghost file-btn">
-            Escolher imagem
-            <input type="file" accept="image/*" (change)="onFile($event)">
-          </label>
+
+          <!-- COLUNA: NOME -->
+          <div class="name-col">
+            <label class="lbl">Nome do Personagem</label>
+            <input class="input input-lg" type="text" autocomplete="off"
+                  [(ngModel)]="nome" placeholder="ex.: Arannis, Yara, Kael..." />
+          </div>
         </div>
 
         <div class="divider"></div>
@@ -178,16 +217,6 @@
         <div class="actions">
           <button class="btn btn-primary" (click)="continuar()">Continuar</button>
         </div>
-      </div>
-
-      <!-- Lateral com dicas -->
-      <div class="card tips-card">
-        <h4>Dicas</h4>
-        <ul>
-          <li>O nome pode conter letras, números e apóstrofos.</li>
-          <li>Escolha a raça e a classe e veja as habilidades antes de continuar.</li>
-          <li>Você está criando para a sessão: <strong *ngIf="idJogo">#{{ idJogo }}</strong><span *ngIf="!idJogo"> — (sem sessão)</span></li>
-        </ul>
       </div>
     </div>
   </section>

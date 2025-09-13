@@ -58,6 +58,11 @@ export class CriarPersonagemComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
+  showHelp = false;           // <-- NOVO
+
+  openHelp()  { this.showHelp = true;  }
+  closeHelp() { this.showHelp = false; }
+
   siteName = 'Reinos Perdidos RPG';
   useAltBackground = true;
 
