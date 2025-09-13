@@ -538,6 +538,152 @@
               </div>
             </div>
           </div>
+          <!-- separador dentro da bolsa -->
+          <div class="divider" style="margin-top:12px;"></div>
+
+          <!-- ====== DECKS NA BOLSA: ARMA & MAGIA ====== -->
+          <div class="decks-row">
+            <!-- A R M A -->
+            <div class="deck-area">
+              <div class="area-title">Arma</div>
+
+              <!-- Fechado -->
+              <button *ngIf="!deckOpenArma" class="deck-stack" (click)="openArmaDeck()">
+                <div class="stack one"
+                    [style.backgroundImage]="imgSrcArma(armas[leftIndexArma()]) ? 'url(' + imgSrcArma(armas[leftIndexArma()]) + ')' : ''"></div>
+                <div class="stack two"
+                    [style.backgroundImage]="imgSrcArma(armas[currentArma]) ? 'url(' + imgSrcArma(armas[currentArma]) + ')' : ''"></div>
+                <div class="stack three"
+                    [style.backgroundImage]="imgSrcArma(armas[rightIndexArma()]) ? 'url(' + imgSrcArma(armas[rightIndexArma()]) + ')' : ''"></div>
+                <div class="deck-label">
+                  <div class="t">Escolher Arma</div>
+                  <div class="s">{{ selectedArma?.nome || 'Toque para abrir' }}</div>
+                </div>
+              </button>
+
+              <!-- Aberto -->
+              <div *ngIf="deckOpenArma" class="deck-open">
+                <button class="nav left" (click)="prevArma()" aria-label="Anterior">‹</button>
+
+                <div class="cards">
+                  <div class="card-deck side left" *ngIf="armas.length">
+                    <img *ngIf="imgSrcArma(armas[leftIndexArma()]) as saL; else noImgAL" [src]="saL" [alt]="armas[leftIndexArma()].nome">
+                    <ng-template #noImgAL><div class="noimg">{{ armas[leftIndexArma()].nome[0] || 'A' }}</div></ng-template>
+                    <div class="name">{{ armas[leftIndexArma()].nome }}</div>
+                  </div>
+
+                  <div class="card-deck main" *ngIf="armas.length">
+                    <img *ngIf="imgSrcArma(armas[currentArma]) as saC; else noImgAC" [src]="saC" [alt]="armas[currentArma].nome">
+                    <ng-template #noImgAC><div class="noimg big">{{ armas[currentArma].nome[0] || 'A' }}</div></ng-template>
+                    <div class="name">{{ armas[currentArma].nome }}</div>
+                    <button class="btn btn-primary select-btn" (click)="chooseCurrentArma()">Selecionar</button>
+                  </div>
+
+                  <div class="card-deck side right" *ngIf="armas.length">
+                    <img *ngIf="imgSrcArma(armas[rightIndexArma()]) as saR; else noImgAR" [src]="saR" [alt]="armas[rightIndexArma()].nome">
+                    <ng-template #noImgAR><div class="noimg">{{ armas[rightIndexArma()].nome[0] || 'A' }}</div></ng-template>
+                    <div class="name">{{ armas[rightIndexArma()].nome }}</div>
+                  </div>
+                </div>
+
+                <button class="nav right" (click)="nextArma()" aria-label="Próxima">›</button>
+                <button class="icon-btn close-deck" (click)="closeArmaDeck()" aria-label="Fechar">✕</button>
+              </div>
+
+              <!-- Resumo Arma -->
+              <div *ngIf="selectedArma as a" class="pick-info">
+                <div class="r-head">
+                  <div class="thumb" *ngIf="imgSrcArma(a) as ia; else ntA"><img [src]="ia" [alt]="a.nome" /></div>
+                  <ng-template #ntA><div class="thumb noimg">{{ a.nome[0] || 'A' }}</div></ng-template>
+                  <div>
+                    <div class="r-title">{{ a.nome }}</div>
+                    <div class="r-desc" *ngIf="a.descricao">{{ a.descricao }}</div>
+                  </div>
+                </div>
+
+                <div class="r-habs">
+                  <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ a.dano || '-' }}</div></div>
+                  <div class="hab"><div class="h-nome">Crítico</div><div class="h-desc">{{ a.critico || '-' }}</div></div>
+                  <div class="hab"><div class="h-nome">Alcance</div><div class="h-desc">{{ a.alcance || '-' }}</div></div>
+                  <div class="hab" *ngIf="a.tipoArma?.nome"><div class="h-nome">Tipo de Arma</div><div class="h-desc">{{ a.tipoArma?.nome }}</div></div>
+                  <div class="hab" *ngIf="a.tipoDano?.nome"><div class="h-nome">Tipo de Dano</div><div class="h-desc">{{ a.tipoDano?.nome }}</div></div>
+                  <div class="hab" *ngIf="a.preco"><div class="h-nome">Preço</div><div class="h-desc">{{ a.preco }}</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- M A G I A -->
+            <div class="deck-area">
+              <div class="area-title">Magia</div>
+
+              <!-- Fechado -->
+              <button *ngIf="!deckOpenMagia" class="deck-stack" (click)="openMagiaDeck()">
+                <div class="stack one"
+                    [style.backgroundImage]="imgSrcMagia(magias[leftIndexMagia()]) ? 'url(' + imgSrcMagia(magias[leftIndexMagia()]) + ')' : ''"></div>
+                <div class="stack two"
+                    [style.backgroundImage]="imgSrcMagia(magias[currentMagia]) ? 'url(' + imgSrcMagia(magias[currentMagia]) + ')' : ''"></div>
+                <div class="stack three"
+                    [style.backgroundImage]="imgSrcMagia(magias[rightIndexMagia()]) ? 'url(' + imgSrcMagia(magias[rightIndexMagia()]) + ')' : ''"></div>
+                <div class="deck-label">
+                  <div class="t">Escolher Magia</div>
+                  <div class="s">{{ selectedMagia?.nome || 'Toque para abrir' }}</div>
+                </div>
+              </button>
+
+              <!-- Aberto -->
+              <div *ngIf="deckOpenMagia" class="deck-open">
+                <button class="nav left" (click)="prevMagia()" aria-label="Anterior">‹</button>
+
+                <div class="cards">
+                  <div class="card-deck side left" *ngIf="magias.length">
+                    <img *ngIf="imgSrcMagia(magias[leftIndexMagia()]) as smL; else noImgML" [src]="smL" [alt]="magias[leftIndexMagia()].nome">
+                    <ng-template #noImgML><div class="noimg">{{ magias[leftIndexMagia()].nome[0] || 'M' }}</div></ng-template>
+                    <div class="name">{{ magias[leftIndexMagia()].nome }}</div>
+                  </div>
+
+                  <div class="card-deck main" *ngIf="magias.length">
+                    <img *ngIf="imgSrcMagia(magias[currentMagia]) as smC; else noImgMC" [src]="smC" [alt]="magias[currentMagia].nome">
+                    <ng-template #noImgMC><div class="noimg big">{{ magias[currentMagia].nome[0] || 'M' }}</div></ng-template>
+                    <div class="name">{{ magias[currentMagia].nome }}</div>
+                    <button class="btn btn-primary select-btn" (click)="chooseCurrentMagia()">Selecionar</button>
+                  </div>
+
+                  <div class="card-deck side right" *ngIf="magias.length">
+                    <img *ngIf="imgSrcMagia(magias[rightIndexMagia()]) as smR; else noImgMR" [src]="smR" [alt]="magias[rightIndexMagia()].nome">
+                    <ng-template #noImgMR><div class="noimg">{{ magias[rightIndexMagia()].nome[0] || 'M' }}</div></ng-template>
+                    <div class="name">{{ magias[rightIndexMagia()].nome }}</div>
+                  </div>
+                </div>
+
+                <button class="nav right" (click)="nextMagia()" aria-label="Próxima">›</button>
+                <button class="icon-btn close-deck" (click)="closeMagiaDeck()" aria-label="Fechar">✕</button>
+              </div>
+
+              <!-- Resumo Magia -->
+              <div *ngIf="selectedMagia as m" class="pick-info">
+                <div class="r-head">
+                  <div class="thumb" *ngIf="imgSrcMagia(m) as im; else ntM"><img [src]="im" [alt]="m.nome" /></div>
+                  <ng-template #ntM><div class="thumb noimg">{{ m.nome[0] || 'M' }}</div></ng-template>
+                  <div>
+                    <div class="r-title">{{ m.nome }}</div>
+                    <div class="r-desc" *ngIf="m.descricao">{{ m.descricao }}</div>
+                  </div>
+                </div>
+
+                <div class="r-habs">
+                  <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ m.dano || '-' }}</div></div>
+                  <div class="hab" *ngIf="m.custo !== undefined"><div class="h-nome">Custo</div><div class="h-desc">{{ m.custo }}</div></div>
+                  <div class="hab" *ngIf="m.circulo !== undefined"><div class="h-nome">Círculo</div><div class="h-desc">{{ m.circulo }}</div></div>
+                  <div class="hab" *ngIf="m.alvoArea"><div class="h-nome">Alvo/Área</div><div class="h-desc">{{ m.alvoArea }}</div></div>
+                  <div class="hab" *ngIf="m.duracao"><div class="h-nome">Duração</div><div class="h-desc">{{ m.duracao }}</div></div>
+                  <div class="hab" *ngIf="m.escolaMagia?.nome"><div class="h-nome">Escola</div><div class="h-desc">{{ m.escolaMagia?.nome }}</div></div>
+                  <div class="hab" *ngIf="m.execucaoMagia?.nome"><div class="h-nome">Execução</div><div class="h-desc">{{ m.execucaoMagia?.nome }}</div></div>
+                  <div class="hab" *ngIf="m.tipoMagia?.nome"><div class="h-nome">Tipo</div><div class="h-desc">{{ m.tipoMagia?.nome }}</div></div>
+                  <div class="hab" *ngIf="m.resistencia?.nome"><div class="h-nome">Resistência</div><div class="h-desc">{{ m.resistencia?.nome }}</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="actions">

@@ -58,6 +58,39 @@ type Divindade = {
   imagemFilename?: string | null;
 };
 
+type Arma = {
+  idArma: number;
+  nome: string;
+  descricao?: string;
+  dano?: string;
+  critico?: string;
+  alcance?: string;
+  preco?: string;
+  ativo?: number;
+  imagem?: string | null;
+  imagemContentType?: string | null;
+  tipoDano?: { idTipoDano: number; nome: string; descricao?: string; ativo?: number } | null;
+  tipoArma?: { idTipoArma: number; nome: string; descricao?: string; ativo?: number } | null;
+};
+
+type Magia = {
+  idMagia: number;
+  nome: string;
+  descricao?: string;
+  duracao?: string;
+  alvoArea?: string;
+  custo?: number;
+  circulo?: number;
+  dano?: string;
+  ativo?: number;
+  imagem?: string | null;
+  imagemContentType?: string | null;
+  escolaMagia?: { idEscolaMagia: number; nome: string; descricao?: string; ativo?: number } | null;
+  execucaoMagia?: { idExecucaoMagia: number; nome: string; descricao?: string; ativo?: number } | null;
+  tipoMagia?: { idTipoMagia: number; nome: string; descricao?: string; ativo?: number } | null;
+  resistencia?: { idResistencia: number; nome: string; descricao?: string; ativo?: number } | null;
+};
+
 @Component({
   selector: 'app-criar-personagem',
   standalone: true,
@@ -122,6 +155,20 @@ export class CriarPersonagemComponent implements OnInit {
   currentDiv = 0;
   selectedDivindade?: Divindade;
 
+  // ===== A R M A =====
+  loadingArmas = true;
+  deckOpenArma = false;
+  armas: Arma[] = [];
+  currentArma = 0;
+  selectedArma?: Arma;
+
+  // ===== M A G I A =====
+  loadingMagias = true;
+  deckOpenMagia = false;
+  magias: Magia[] = [];
+  currentMagia = 0;
+  selectedMagia?: Magia;
+
   attrs: { 
     forca: string; 
     destreza: string; 
@@ -143,6 +190,8 @@ export class CriarPersonagemComponent implements OnInit {
     this.fetchClasses();
     this.fetchOrigens();
     this.fetchDivindades();
+    this.fetchArmas();
+    this.fetchMagias();
   }
 
   onTibarInput(key: keyof typeof this.tibares, e: Event) {
@@ -298,6 +347,52 @@ export class CriarPersonagemComponent implements OnInit {
   leftIndexDiv()  { return this.divindades.length ? (this.currentDiv - 1 + this.divindades.length) % this.divindades.length : 0; }
   rightIndexDiv() { return this.divindades.length ? (this.currentDiv + 1) % this.divindades.length : 0; }
 
+  // ---------- A R M A ----------
+  fetchArmas() {
+    this.loadingArmas = true;
+    this.http.get<Arma[]>(API_ENDPOINTS.armas).subscribe({
+      next: (arr) => {
+        this.armas = Array.isArray(arr) ? arr : [];
+        this.currentArma = 0;
+        this.loadingArmas = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar as armas.';
+        this.loadingArmas = false;
+      }
+    });
+  }
+  openArmaDeck()  { if (!this.deckOpenArma) this.deckOpenArma = true; }
+  closeArmaDeck() { this.deckOpenArma = false; }
+  prevArma()      { if (this.armas.length) this.currentArma = (this.currentArma - 1 + this.armas.length) % this.armas.length; }
+  nextArma()      { if (this.armas.length) this.currentArma = (this.currentArma + 1) % this.armas.length; }
+  chooseCurrentArma() { if (this.armas.length) { this.selectedArma = this.armas[this.currentArma]; this.deckOpenArma = false; } }
+  leftIndexArma()  { return this.armas.length ? (this.currentArma - 1 + this.armas.length) % this.armas.length : 0; }
+  rightIndexArma() { return this.armas.length ? (this.currentArma + 1) % this.armas.length : 0; }
+
+  // ---------- M A G I A ----------
+  fetchMagias() {
+    this.loadingMagias = true;
+    this.http.get<Magia[]>(API_ENDPOINTS.magias).subscribe({
+      next: (arr) => {
+        this.magias = Array.isArray(arr) ? arr : [];
+        this.currentMagia = 0;
+        this.loadingMagias = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar as magias.';
+        this.loadingMagias = false;
+      }
+    });
+  }
+  openMagiaDeck()  { if (!this.deckOpenMagia) this.deckOpenMagia = true; }
+  closeMagiaDeck() { this.deckOpenMagia = false; }
+  prevMagia()      { if (this.magias.length) this.currentMagia = (this.currentMagia - 1 + this.magias.length) % this.magias.length; }
+  nextMagia()      { if (this.magias.length) this.currentMagia = (this.currentMagia + 1) % this.magias.length; }
+  chooseCurrentMagia() { if (this.magias.length) { this.selectedMagia = this.magias[this.currentMagia]; this.deckOpenMagia = false; } }
+  leftIndexMagia()  { return this.magias.length ? (this.currentMagia - 1 + this.magias.length) % this.magias.length : 0; }
+  rightIndexMagia() { return this.magias.length ? (this.currentMagia + 1) % this.magias.length : 0; }
+
   // ---------- IMG helpers ----------
   imgSrcRaca(r?: Raca): string | null {
     if (!r) return null;
@@ -329,6 +424,22 @@ export class CriarPersonagemComponent implements OnInit {
     if (!d || !d.imagem) return null;
     const raw = (d.imagem || '').replace(/\s/g, '');
     const mime = d.imagemContentType || 'image/png';
+    if (/^data:.*;base64,/i.test(raw)) return raw;
+    return `data:${mime};base64,${raw}`;
+  }
+
+  imgSrcArma(a?: Arma): string | null {
+    if (!a || !a.imagem) return null;
+    const raw = (a.imagem || '').replace(/\s/g, '');
+    const mime = a.imagemContentType || 'image/png';
+    if (/^data:.*;base64,/i.test(raw)) return raw;
+    return `data:${mime};base64,${raw}`;
+  }
+
+  imgSrcMagia(m?: Magia): string | null {
+    if (!m || !m.imagem) return null;
+    const raw = (m.imagem || '').replace(/\s/g, '');
+    const mime = m.imagemContentType || 'image/png';
     if (/^data:.*;base64,/i.test(raw)) return raw;
     return `data:${mime};base64,${raw}`;
   }
@@ -365,15 +476,11 @@ export class CriarPersonagemComponent implements OnInit {
     if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;
 
     // atributos: só envia os que tiverem valor
-    Object.entries(this.attrs).forEach(([k, v]) => {
-      if (v && v.trim() !== '') queryParams[k] = v.trim();
-    });
-    
-    Object.entries(this.vitals).forEach(([k, v]) => {
-      if (v && v.trim() !== '') queryParams[k] = v.trim();
-    });
-
     Object.entries(this.tibares).forEach(([k, v]) => {
+      if (v && v.trim() !== '') queryParams[k] = v.trim();
+      if (this.selectedArma)  queryParams.arma  = this.selectedArma.idArma;
+      if (this.selectedMagia) queryParams.magia = this.selectedMagia.idMagia;
+      if (v && v.trim() !== '') queryParams[k] = v.trim();
       if (v && v.trim() !== '') queryParams[k] = v.trim();
     });
 

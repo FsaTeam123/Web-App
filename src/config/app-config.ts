@@ -23,6 +23,8 @@ export const API_ENDPOINTS = {
   // <<< NOVOS ENDPOINTS >>>
   origens: `${API_BASE_URL}/origens`,
   divindades: `${API_BASE_URL}/divindades`,
+  armas: `${API_BASE_URL}/armas`,
+  magias: `${API_BASE_URL}/magias`,
 };
 
 // assets
