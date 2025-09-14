@@ -481,3 +481,28 @@ h2 span { color: #e6bd3b; }
 @media (max-width: 900px) {
   .tibares-grid { grid-template-columns: 1fr; }
 }
+
+/* ==== Collapsibles dos resumos ==== */
+.collapsible { position: relative; }
+.collapsible-header {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  background: transparent; border: none; color: inherit; cursor: pointer;
+}
+.collapsible-header .chev { transition: transform .2s ease; font-size: 1.2rem; line-height: 1; opacity: .9; }
+.collapsible.open .chev { transform: rotate(180deg); }
+
+.collapsible-body {
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height .25s ease, padding .2s ease, opacity .2s ease;
+}
+.collapsible.open .collapsible-body {
+  max-height: 600px;     /* grande o suficiente pro conteúdo */
+  padding-top: 8px;
+  opacity: 1;
+}

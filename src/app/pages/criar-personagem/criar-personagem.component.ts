@@ -169,6 +169,14 @@ export class CriarPersonagemComponent implements OnInit {
   currentMagia = 0;
   selectedMagia?: Magia;
 
+  // expand/collapse dos resumos
+  expandRaca = false;
+  expandClasse = false;
+  expandOrigem = false;
+  expandDivindade = false;
+  expandArma = false;
+  expandMagia = false;
+
   attrs: { 
     forca: string; 
     destreza: string; 
@@ -474,15 +482,12 @@ export class CriarPersonagemComponent implements OnInit {
 
     if (this.selectedOrigem)    queryParams.origem    = this.selectedOrigem.idOrigem;
     if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;
+    if (this.selectedArma)      queryParams.arma      = this.selectedArma.idArma;
+    if (this.selectedMagia)     queryParams.magia     = this.selectedMagia.idMagia;
 
-    // atributos: só envia os que tiverem valor
-    Object.entries(this.tibares).forEach(([k, v]) => {
-      if (v && v.trim() !== '') queryParams[k] = v.trim();
-      if (this.selectedArma)  queryParams.arma  = this.selectedArma.idArma;
-      if (this.selectedMagia) queryParams.magia = this.selectedMagia.idMagia;
-      if (v && v.trim() !== '') queryParams[k] = v.trim();
-      if (v && v.trim() !== '') queryParams[k] = v.trim();
-    });
+    Object.entries(this.attrs).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
+    Object.entries(this.vitals).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
+    Object.entries(this.tibares).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
 
     this.router.navigate(['/criar-personagem/classe'], { queryParams });
   }

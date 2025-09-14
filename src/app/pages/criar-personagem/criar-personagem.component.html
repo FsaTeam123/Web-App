@@ -239,21 +239,25 @@
               <button class="icon-btn close-deck" (click)="closeRaceDeck()" aria-label="Fechar">✕</button>
             </div>
 
-            <!-- Resumo Raça -->
-            <div *ngIf="selectedRaca as sR" class="pick-info">
-              <div class="r-head">
-                <div class="thumb" *ngIf="imgSrcRaca(sR) as sr; else ntR"><img [src]="sr" [alt]="sR.nome" /></div>
-                <ng-template #ntR><div class="thumb noimg">{{ sR.nome[0] || 'R' }}</div></ng-template>
-                <div>
+            <!-- Resumo Raça (colapsável) -->
+            <div *ngIf="selectedRaca as sR" class="pick-info collapsible" [class.open]="expandRaca">
+              <button class="collapsible-header" (click)="expandRaca = !expandRaca" [attr.aria-expanded]="expandRaca">
+                <div class="r-head">
+                  <div class="thumb" *ngIf="imgSrcRaca(sR) as sr; else ntR"><img [src]="sr" [alt]="sR.nome" /></div>
+                  <ng-template #ntR><div class="thumb noimg">{{ sR.nome[0] || 'R' }}</div></ng-template>
                   <div class="r-title">{{ sR.nome }}</div>
-                  <div class="r-desc" *ngIf="sR.descricao">{{ sR.descricao }}</div>
                 </div>
-              </div>
+                <span class="chev">⌄</span>
+              </button>
 
-              <div class="r-habs" *ngIf="sR.habilidades?.length">
-                <div class="hab" *ngFor="let h of sR.habilidades">
-                  <div class="h-nome">{{ h.nome }}</div>
-                  <div class="h-desc" *ngIf="h.descricao">{{ h.descricao }}</div>
+              <div class="collapsible-body">
+                <div class="r-desc" *ngIf="sR.descricao">{{ sR.descricao }}</div>
+
+                <div class="r-habs" *ngIf="sR.habilidades?.length">
+                  <div class="hab" *ngFor="let h of sR.habilidades">
+                    <div class="h-nome">{{ h.nome }}</div>
+                    <div class="h-desc" *ngIf="h.descricao">{{ h.descricao }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -306,30 +310,34 @@
               <button class="icon-btn close-deck" (click)="closeClassDeck()" aria-label="Fechar">✕</button>
             </div>
 
-            <!-- Resumo Classe -->
-            <div *ngIf="selectedClasse as c" class="pick-info">
-              <div class="r-head">
-                <div class="thumb" *ngIf="imgSrcClasse(c) as sc; else ntC"><img [src]="sc" [alt]="c.nome" /></div>
-                <ng-template #ntC><div class="thumb noimg">{{ c.nome[0] || 'C' }}</div></ng-template>
-                <div>
+            <!-- Resumo Classe (colapsável) -->
+            <div *ngIf="selectedClasse as c" class="pick-info collapsible" [class.open]="expandClasse">
+              <button class="collapsible-header" (click)="expandClasse = !expandClasse" [attr.aria-expanded]="expandClasse">
+                <div class="r-head">
+                  <div class="thumb" *ngIf="imgSrcClasse(c) as sc; else ntC"><img [src]="sc" [alt]="c.nome" /></div>
+                  <ng-template #ntC><div class="thumb noimg">{{ c.nome[0] || 'C' }}</div></ng-template>
                   <div class="r-title">{{ c.nome }}</div>
-                  <div class="r-desc" *ngIf="c.descricao">{{ c.descricao }}</div>
                 </div>
-              </div>
+                <span class="chev">⌄</span>
+              </button>
 
-              <div class="r-habs" *ngIf="c.proeficiencias?.length">
-                <div class="subhead">Proficiências</div>
-                <div class="hab" *ngFor="let p of c.proeficiencias">
-                  <div class="h-nome">{{ p.nome }}</div>
-                  <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+              <div class="collapsible-body">
+                <div class="r-desc" *ngIf="c.descricao">{{ c.descricao }}</div>
+
+                <div class="r-habs" *ngIf="c.proeficiencias?.length">
+                  <div class="subhead">Proficiências</div>
+                  <div class="hab" *ngFor="let p of c.proeficiencias">
+                    <div class="h-nome">{{ p.nome }}</div>
+                    <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="r-habs" *ngIf="c.pericias?.length">
-                <div class="subhead">Perícias</div>
-                <div class="hab" *ngFor="let p of c.pericias">
-                  <div class="h-nome">{{ p.nome }}</div>
-                  <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+                <div class="r-habs" *ngIf="c.pericias?.length">
+                  <div class="subhead">Perícias</div>
+                  <div class="hab" *ngFor="let p of c.pericias">
+                    <div class="h-nome">{{ p.nome }}</div>
+                    <div class="h-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -388,15 +396,19 @@
               <button class="icon-btn close-deck" (click)="closeOrigemDeck()" aria-label="Fechar">✕</button>
             </div>
 
-            <!-- Resumo Origem -->
-            <div *ngIf="selectedOrigem as o" class="pick-info">
-              <div class="r-head">
-                <div class="thumb" *ngIf="imgSrcOrigem(o) as so; else ntO"><img [src]="so" [alt]="o.nome" /></div>
-                <ng-template #ntO><div class="thumb noimg">{{ o.nome[0] || 'O' }}</div></ng-template>
-                <div>
+            <!-- Resumo Origem (colapsável) -->
+            <div *ngIf="selectedOrigem as o" class="pick-info collapsible" [class.open]="expandOrigem">
+              <button class="collapsible-header" (click)="expandOrigem = !expandOrigem" [attr.aria-expanded]="expandOrigem">
+                <div class="r-head">
+                  <div class="thumb" *ngIf="imgSrcOrigem(o) as so; else ntO"><img [src]="so" [alt]="o.nome" /></div>
+                  <ng-template #ntO><div class="thumb noimg">{{ o.nome[0] || 'O' }}</div></ng-template>
                   <div class="r-title">{{ o.nome }}</div>
-                  <div class="r-desc" *ngIf="o.descricao">{{ o.descricao }}</div>
                 </div>
+                <span class="chev">⌄</span>
+              </button>
+
+              <div class="collapsible-body">
+                <div class="r-desc" *ngIf="o.descricao">{{ o.descricao }}</div>
               </div>
             </div>
           </div>
@@ -448,15 +460,19 @@
               <button class="icon-btn close-deck" (click)="closeDivDeck()" aria-label="Fechar">✕</button>
             </div>
 
-            <!-- Resumo Divindade -->
-            <div *ngIf="selectedDivindade as d" class="pick-info">
-              <div class="r-head">
-                <div class="thumb" *ngIf="imgSrcDivindade(d) as sd; else ntD"><img [src]="sd" [alt]="d.nome" /></div>
-                <ng-template #ntD><div class="thumb noimg">{{ d.nome[0] || 'D' }}</div></ng-template>
-                <div>
+            <!-- Resumo Divindade (colapsável) -->
+            <div *ngIf="selectedDivindade as d" class="pick-info collapsible" [class.open]="expandDivindade">
+              <button class="collapsible-header" (click)="expandDivindade = !expandDivindade" [attr.aria-expanded]="expandDivindade">
+                <div class="r-head">
+                  <div class="thumb" *ngIf="imgSrcDivindade(d) as sd; else ntD"><img [src]="sd" [alt]="d.nome" /></div>
+                  <ng-template #ntD><div class="thumb noimg">{{ d.nome[0] || 'D' }}</div></ng-template>
                   <div class="r-title">{{ d.nome }}</div>
-                  <div class="r-desc" *ngIf="d.descricao">{{ d.descricao }}</div>
                 </div>
+                <span class="chev">⌄</span>
+              </button>
+
+              <div class="collapsible-body">
+                <div class="r-desc" *ngIf="d.descricao">{{ d.descricao }}</div>
               </div>
             </div>
           </div>
@@ -590,24 +606,28 @@
                 <button class="icon-btn close-deck" (click)="closeArmaDeck()" aria-label="Fechar">✕</button>
               </div>
 
-              <!-- Resumo Arma -->
-              <div *ngIf="selectedArma as a" class="pick-info">
-                <div class="r-head">
-                  <div class="thumb" *ngIf="imgSrcArma(a) as ia; else ntA"><img [src]="ia" [alt]="a.nome" /></div>
-                  <ng-template #ntA><div class="thumb noimg">{{ a.nome[0] || 'A' }}</div></ng-template>
-                  <div>
+              <!-- Resumo Arma (colapsável) -->
+              <div *ngIf="selectedArma as a" class="pick-info collapsible" [class.open]="expandArma">
+                <button class="collapsible-header" (click)="expandArma = !expandArma" [attr.aria-expanded]="expandArma">
+                  <div class="r-head">
+                    <div class="thumb" *ngIf="imgSrcArma(a) as ia; else ntA"><img [src]="ia" [alt]="a.nome" /></div>
+                    <ng-template #ntA><div class="thumb noimg">{{ a.nome[0] || 'A' }}</div></ng-template>
                     <div class="r-title">{{ a.nome }}</div>
-                    <div class="r-desc" *ngIf="a.descricao">{{ a.descricao }}</div>
                   </div>
-                </div>
+                  <span class="chev">⌄</span>
+                </button>
 
-                <div class="r-habs">
-                  <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ a.dano || '-' }}</div></div>
-                  <div class="hab"><div class="h-nome">Crítico</div><div class="h-desc">{{ a.critico || '-' }}</div></div>
-                  <div class="hab"><div class="h-nome">Alcance</div><div class="h-desc">{{ a.alcance || '-' }}</div></div>
-                  <div class="hab" *ngIf="a.tipoArma?.nome"><div class="h-nome">Tipo de Arma</div><div class="h-desc">{{ a.tipoArma?.nome }}</div></div>
-                  <div class="hab" *ngIf="a.tipoDano?.nome"><div class="h-nome">Tipo de Dano</div><div class="h-desc">{{ a.tipoDano?.nome }}</div></div>
-                  <div class="hab" *ngIf="a.preco"><div class="h-nome">Preço</div><div class="h-desc">{{ a.preco }}</div></div>
+                <div class="collapsible-body">
+                  <div class="r-desc" *ngIf="a.descricao">{{ a.descricao }}</div>
+
+                  <div class="r-habs">
+                    <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ a.dano || '-' }}</div></div>
+                    <div class="hab"><div class="h-nome">Crítico</div><div class="h-desc">{{ a.critico || '-' }}</div></div>
+                    <div class="hab"><div class="h-nome">Alcance</div><div class="h-desc">{{ a.alcance || '-' }}</div></div>
+                    <div class="hab" *ngIf="a.tipoArma?.nome"><div class="h-nome">Tipo de Arma</div><div class="h-desc">{{ a.tipoArma?.nome }}</div></div>
+                    <div class="hab" *ngIf="a.tipoDano?.nome"><div class="h-nome">Tipo de Dano</div><div class="h-desc">{{ a.tipoDano?.nome }}</div></div>
+                    <div class="hab" *ngIf="a.preco"><div class="h-nome">Preço</div><div class="h-desc">{{ a.preco }}</div></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -659,27 +679,31 @@
                 <button class="icon-btn close-deck" (click)="closeMagiaDeck()" aria-label="Fechar">✕</button>
               </div>
 
-              <!-- Resumo Magia -->
-              <div *ngIf="selectedMagia as m" class="pick-info">
-                <div class="r-head">
-                  <div class="thumb" *ngIf="imgSrcMagia(m) as im; else ntM"><img [src]="im" [alt]="m.nome" /></div>
-                  <ng-template #ntM><div class="thumb noimg">{{ m.nome[0] || 'M' }}</div></ng-template>
-                  <div>
+              <!-- Resumo Magia (colapsável) -->
+              <div *ngIf="selectedMagia as m" class="pick-info collapsible" [class.open]="expandMagia">
+                <button class="collapsible-header" (click)="expandMagia = !expandMagia" [attr.aria-expanded]="expandMagia">
+                  <div class="r-head">
+                    <div class="thumb" *ngIf="imgSrcMagia(m) as im; else ntM"><img [src]="im" [alt]="m.nome" /></div>
+                    <ng-template #ntM><div class="thumb noimg">{{ m.nome[0] || 'M' }}</div></ng-template>
                     <div class="r-title">{{ m.nome }}</div>
-                    <div class="r-desc" *ngIf="m.descricao">{{ m.descricao }}</div>
                   </div>
-                </div>
+                  <span class="chev">⌄</span>
+                </button>
 
-                <div class="r-habs">
-                  <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ m.dano || '-' }}</div></div>
-                  <div class="hab" *ngIf="m.custo !== undefined"><div class="h-nome">Custo</div><div class="h-desc">{{ m.custo }}</div></div>
-                  <div class="hab" *ngIf="m.circulo !== undefined"><div class="h-nome">Círculo</div><div class="h-desc">{{ m.circulo }}</div></div>
-                  <div class="hab" *ngIf="m.alvoArea"><div class="h-nome">Alvo/Área</div><div class="h-desc">{{ m.alvoArea }}</div></div>
-                  <div class="hab" *ngIf="m.duracao"><div class="h-nome">Duração</div><div class="h-desc">{{ m.duracao }}</div></div>
-                  <div class="hab" *ngIf="m.escolaMagia?.nome"><div class="h-nome">Escola</div><div class="h-desc">{{ m.escolaMagia?.nome }}</div></div>
-                  <div class="hab" *ngIf="m.execucaoMagia?.nome"><div class="h-nome">Execução</div><div class="h-desc">{{ m.execucaoMagia?.nome }}</div></div>
-                  <div class="hab" *ngIf="m.tipoMagia?.nome"><div class="h-nome">Tipo</div><div class="h-desc">{{ m.tipoMagia?.nome }}</div></div>
-                  <div class="hab" *ngIf="m.resistencia?.nome"><div class="h-nome">Resistência</div><div class="h-desc">{{ m.resistencia?.nome }}</div></div>
+                <div class="collapsible-body">
+                  <div class="r-desc" *ngIf="m.descricao">{{ m.descricao }}</div>
+
+                  <div class="r-habs">
+                    <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ m.dano || '-' }}</div></div>
+                    <div class="hab" *ngIf="m.custo !== undefined"><div class="h-nome">Custo</div><div class="h-desc">{{ m.custo }}</div></div>
+                    <div class="hab" *ngIf="m.circulo !== undefined"><div class="h-nome">Círculo</div><div class="h-desc">{{ m.circulo }}</div></div>
+                    <div class="hab" *ngIf="m.alvoArea"><div class="h-nome">Alvo/Área</div><div class="h-desc">{{ m.alvoArea }}</div></div>
+                    <div class="hab" *ngIf="m.duracao"><div class="h-nome">Duração</div><div class="h-desc">{{ m.duracao }}</div></div>
+                    <div class="hab" *ngIf="m.escolaMagia?.nome"><div class="h-nome">Escola</div><div class="h-desc">{{ m.escolaMagia?.nome }}</div></div>
+                    <div class="hab" *ngIf="m.execucaoMagia?.nome"><div class="h-nome">Execução</div><div class="h-desc">{{ m.execucaoMagia?.nome }}</div></div>
+                    <div class="hab" *ngIf="m.tipoMagia?.nome"><div class="h-nome">Tipo</div><div class="h-desc">{{ m.tipoMagia?.nome }}</div></div>
+                    <div class="hab" *ngIf="m.resistencia?.nome"><div class="h-nome">Resistência</div><div class="h-desc">{{ m.resistencia?.nome }}</div></div>
+                  </div>
                 </div>
               </div>
             </div>
