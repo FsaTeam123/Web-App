@@ -91,6 +91,16 @@ type Magia = {
   resistencia?: { idResistencia: number; nome: string; descricao?: string; ativo?: number } | null;
 };
 
+type Poder = {
+  idPoder: number;
+  nome: string;
+  descricao?: string;
+  tipoPoder?: { idTipoPoder: number; nome: string; descricao?: string } | null;
+  imagem?: string | null;
+  imagemContentType?: string | null;
+  imagemFilename?: string | null;
+};
+
 @Component({
   selector: 'app-criar-personagem',
   standalone: true,
@@ -168,6 +178,13 @@ export class CriarPersonagemComponent implements OnInit {
   magias: Magia[] = [];
   currentMagia = 0;
   selectedMagia?: Magia;
+  
+  // ===== P O D E R =====
+  loadingPoderes = true;
+  deckOpenPoder = false;
+  poderes: Poder[] = [];
+  currentPoder = 0;
+  selectedPoder?: Poder;
 
   // expand/collapse dos resumos
   expandRaca = false;
@@ -176,6 +193,7 @@ export class CriarPersonagemComponent implements OnInit {
   expandDivindade = false;
   expandArma = false;
   expandMagia = false;
+  expandPoder = false;
 
   attrs: { 
     forca: string; 
@@ -200,6 +218,7 @@ export class CriarPersonagemComponent implements OnInit {
     this.fetchDivindades();
     this.fetchArmas();
     this.fetchMagias();
+    this.fetchPoderes();
   }
 
   onTibarInput(key: keyof typeof this.tibares, e: Event) {
@@ -401,6 +420,29 @@ export class CriarPersonagemComponent implements OnInit {
   leftIndexMagia()  { return this.magias.length ? (this.currentMagia - 1 + this.magias.length) % this.magias.length : 0; }
   rightIndexMagia() { return this.magias.length ? (this.currentMagia + 1) % this.magias.length : 0; }
 
+  // ---------- P O D E R ----------
+  fetchPoderes() {
+    this.loadingPoderes = true;
+    this.http.get<Poder[]>(API_ENDPOINTS.poderes).subscribe({
+      next: (arr) => {
+        this.poderes = Array.isArray(arr) ? arr : [];
+        this.currentPoder = 0;
+        this.loadingPoderes = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar os poderes.';
+        this.loadingPoderes = false;
+      }
+    });
+  }
+  openPoderDeck()  { if (!this.deckOpenPoder) this.deckOpenPoder = true; }
+  closePoderDeck() { this.deckOpenPoder = false; }
+  prevPoder()      { if (this.poderes.length) this.currentPoder = (this.currentPoder - 1 + this.poderes.length) % this.poderes.length; }
+  nextPoder()      { if (this.poderes.length) this.currentPoder = (this.currentPoder + 1) % this.poderes.length; }
+  chooseCurrentPoder() { if (this.poderes.length) { this.selectedPoder = this.poderes[this.currentPoder]; this.deckOpenPoder = false; } }
+  leftIndexPoder()  { return this.poderes.length ? (this.currentPoder - 1 + this.poderes.length) % this.poderes.length : 0; }
+  rightIndexPoder() { return this.poderes.length ? (this.currentPoder + 1) % this.poderes.length : 0; }
+
   // ---------- IMG helpers ----------
   imgSrcRaca(r?: Raca): string | null {
     if (!r) return null;
@@ -452,6 +494,14 @@ export class CriarPersonagemComponent implements OnInit {
     return `data:${mime};base64,${raw}`;
   }
 
+  imgSrcPoder(p?: Poder): string | null {
+    if (!p || !p.imagem) return null;
+    const raw = (p.imagem || '').replace(/\s/g, '');
+    const mime = p.imagemContentType || 'image/png';
+    if (/^data:.*;base64,/i.test(raw)) return raw;
+    return `data:${mime};base64,${raw}`;
+  }
+
   // foto do personagem (arquivo -> base64)
   onFile(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -484,6 +534,7 @@ export class CriarPersonagemComponent implements OnInit {
     if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;
     if (this.selectedArma)      queryParams.arma      = this.selectedArma.idArma;
     if (this.selectedMagia)     queryParams.magia     = this.selectedMagia.idMagia;
+    if (this.selectedPoder)     queryParams.poder     = this.selectedPoder.idPoder;
 
     Object.entries(this.attrs).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
     Object.entries(this.vitals).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });

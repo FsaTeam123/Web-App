@@ -708,6 +708,81 @@
               </div>
             </div>
           </div>
+                    <!-- separador abaixo de Arma & Magia -->
+          <div class="divider" style="margin-top:12px;"></div>
+
+          <!-- ====== DECK NA BOLSA: PODER ====== -->
+          <div class="decks-row single">
+            <div class="deck-area">
+              <div class="area-title">Poder</div>
+
+              <!-- Fechado -->
+              <button *ngIf="!deckOpenPoder" class="deck-stack" (click)="openPoderDeck()">
+                <div class="stack one"
+                     [style.backgroundImage]="imgSrcPoder(poderes[leftIndexPoder()]) ? 'url(' + imgSrcPoder(poderes[leftIndexPoder()]) + ')' : ''"></div>
+                <div class="stack two"
+                     [style.backgroundImage]="imgSrcPoder(poderes[currentPoder]) ? 'url(' + imgSrcPoder(poderes[currentPoder]) + ')' : ''"></div>
+                <div class="stack three"
+                     [style.backgroundImage]="imgSrcPoder(poderes[rightIndexPoder()]) ? 'url(' + imgSrcPoder(poderes[rightIndexPoder()]) + ')' : ''"></div>
+                <div class="deck-label">
+                  <div class="t">Escolher Poder</div>
+                  <div class="s">{{ selectedPoder?.nome || 'Toque para abrir' }}</div>
+                </div>
+              </button>
+
+              <!-- Aberto -->
+              <div *ngIf="deckOpenPoder" class="deck-open">
+                <button class="nav left" (click)="prevPoder()" aria-label="Anterior">‹</button>
+
+                <div class="cards">
+                  <div class="card-deck side left" *ngIf="poderes.length">
+                    <img *ngIf="imgSrcPoder(poderes[leftIndexPoder()]) as spL; else noImgPL" [src]="spL" [alt]="poderes[leftIndexPoder()].nome">
+                    <ng-template #noImgPL><div class="noimg">{{ poderes[leftIndexPoder()].nome[0] || 'P' }}</div></ng-template>
+                    <div class="name">{{ poderes[leftIndexPoder()].nome }}</div>
+                  </div>
+
+                  <div class="card-deck main" *ngIf="poderes.length">
+                    <img *ngIf="imgSrcPoder(poderes[currentPoder]) as spC; else noImgPC" [src]="spC" [alt]="poderes[currentPoder].nome">
+                    <ng-template #noImgPC><div class="noimg big">{{ poderes[currentPoder].nome[0] || 'P' }}</div></ng-template>
+                    <div class="name">{{ poderes[currentPoder].nome }}</div>
+                    <button class="btn btn-primary select-btn" (click)="chooseCurrentPoder()">Selecionar</button>
+                  </div>
+
+                  <div class="card-deck side right" *ngIf="poderes.length">
+                    <img *ngIf="imgSrcPoder(poderes[rightIndexPoder()]) as spR; else noImgPR" [src]="spR" [alt]="poderes[rightIndexPoder()].nome">
+                    <ng-template #noImgPR><div class="noimg">{{ poderes[rightIndexPoder()].nome[0] || 'P' }}</div></ng-template>
+                    <div class="name">{{ poderes[rightIndexPoder()].nome }}</div>
+                  </div>
+                </div>
+
+                <button class="nav right" (click)="nextPoder()" aria-label="Próxima">›</button>
+                <button class="icon-btn close-deck" (click)="closePoderDeck()" aria-label="Fechar">✕</button>
+              </div>
+
+              <!-- Resumo Poder (colapsável) -->
+              <div *ngIf="selectedPoder as p" class="pick-info collapsible" [class.open]="expandPoder">
+                <button class="collapsible-header" (click)="expandPoder = !expandPoder" [attr.aria-expanded]="expandPoder">
+                  <div class="r-head">
+                    <div class="thumb" *ngIf="imgSrcPoder(p) as ip; else ntP"><img [src]="ip" [alt]="p.nome" /></div>
+                    <ng-template #ntP><div class="thumb noimg">{{ p.nome[0] || 'P' }}</div></ng-template>
+                    <div class="r-title">{{ p.nome }}</div>
+                  </div>
+                  <span class="chev">⌄</span>
+                </button>
+
+                <div class="collapsible-body">
+                  <div class="r-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
+
+                  <div class="r-habs">
+                    <div class="hab" *ngIf="p.tipoPoder?.nome">
+                      <div class="h-nome">Tipo de Poder</div>
+                      <div class="h-desc">{{ p.tipoPoder?.nome }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- /deck-area -->
+          </div>   <!-- /decks-row.single -->
         </div>
 
         <div class="actions">

@@ -506,3 +506,5 @@ h2 span { color: #e6bd3b; }
   padding-top: 8px;
   opacity: 1;
 }
+
+.decks-row.single { grid-template-columns: 1fr; }
