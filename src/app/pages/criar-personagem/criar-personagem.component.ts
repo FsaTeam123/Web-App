@@ -25,7 +25,19 @@ type Raca = {
 };
 
 type Proeficiencia = { idProeficiencia: number; nome: string; descricao?: string; ativo?: number };
-type Pericia       = { idPericia: number;       nome: string; descricao?: string; ativo?: number };
+type Atributo = { idAtributo: number; nome: string; descricao?: string; ativo?: number };
+
+// Amplie o tipo já existente para também aceitar atributo vindo do /pericias
+type Pericia = {
+  idPericia: number;
+  nome: string;
+  descricao?: string;
+  ativo?: number;
+  atributo?: Atributo | null;          // <-- novo
+  imagem?: string | null;
+  imagemContentType?: string | null;
+  imagemFilename?: string | null;
+};
 
 type Classe = {
   idClasse: number;
@@ -117,6 +129,7 @@ type Poder = {
 })
 export class CriarPersonagemComponent implements OnInit {
 
+  Math = Math;
   private http = inject(HttpClient);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -136,6 +149,10 @@ export class CriarPersonagemComponent implements OnInit {
   fotoB64?: string;
   fotoMime?: string;
   erro?: string;
+
+  selectedArmas: Arma[] = [];
+  selectedMagias: Magia[] = [];
+  selectedPoderes: Poder[] = [];
 
   // ===== R A Ç A =====
   loadingRacas = true;
@@ -186,6 +203,12 @@ export class CriarPersonagemComponent implements OnInit {
   currentPoder = 0;
   selectedPoder?: Poder;
 
+  // ===== P E R Í C I A S =====
+  loadingPericias = true;
+  pericias: Pericia[] = [];
+  periciasByAttr: Record<number, Pericia[]> = {};
+  selectedPericiasByAttr: Record<number, number[]> = {};
+
   // expand/collapse dos resumos
   expandRaca = false;
   expandClasse = false;
@@ -208,6 +231,13 @@ export class CriarPersonagemComponent implements OnInit {
 
   tibares: { ouro: string; prata: string; cobre: string } = { ouro: '', prata: '', cobre: '' };
 
+  showCardModal = false;
+  cardKind: 'arma' | 'magia' | 'poder' | null = null;
+  cardData: any = null;
+
+  isFlipped = false;                // controla frente/verso
+  cardImgSrc: string | null = null;
+
   ngOnInit(): void {
     const q = this.route.snapshot.queryParamMap.get('jogo');
     this.idJogo = q ? Number(q) : undefined;
@@ -219,6 +249,7 @@ export class CriarPersonagemComponent implements OnInit {
     this.fetchArmas();
     this.fetchMagias();
     this.fetchPoderes();
+    this.fetchPericias();
   }
 
   onTibarInput(key: keyof typeof this.tibares, e: Event) {
@@ -393,7 +424,16 @@ export class CriarPersonagemComponent implements OnInit {
   closeArmaDeck() { this.deckOpenArma = false; }
   prevArma()      { if (this.armas.length) this.currentArma = (this.currentArma - 1 + this.armas.length) % this.armas.length; }
   nextArma()      { if (this.armas.length) this.currentArma = (this.currentArma + 1) % this.armas.length; }
-  chooseCurrentArma() { if (this.armas.length) { this.selectedArma = this.armas[this.currentArma]; this.deckOpenArma = false; } }
+  chooseCurrentArma() {
+    if (this.armas.length) {
+      const a = this.armas[this.currentArma];
+      this.selectedArma = a; // mantém compatibilidade com seu fluxo atual
+      if (!this.selectedArmas.some(x => x.idArma === a.idArma)) {
+        this.selectedArmas.unshift(a);
+      }
+      this.deckOpenArma = false;
+    }
+  }
   leftIndexArma()  { return this.armas.length ? (this.currentArma - 1 + this.armas.length) % this.armas.length : 0; }
   rightIndexArma() { return this.armas.length ? (this.currentArma + 1) % this.armas.length : 0; }
 
@@ -416,7 +456,16 @@ export class CriarPersonagemComponent implements OnInit {
   closeMagiaDeck() { this.deckOpenMagia = false; }
   prevMagia()      { if (this.magias.length) this.currentMagia = (this.currentMagia - 1 + this.magias.length) % this.magias.length; }
   nextMagia()      { if (this.magias.length) this.currentMagia = (this.currentMagia + 1) % this.magias.length; }
-  chooseCurrentMagia() { if (this.magias.length) { this.selectedMagia = this.magias[this.currentMagia]; this.deckOpenMagia = false; } }
+  chooseCurrentMagia() {
+    if (this.magias.length) {
+      const m = this.magias[this.currentMagia];
+      this.selectedMagia = m;
+      if (!this.selectedMagias.some(x => x.idMagia === m.idMagia)) {
+        this.selectedMagias.unshift(m);
+      }
+      this.deckOpenMagia = false;
+    }
+  }
   leftIndexMagia()  { return this.magias.length ? (this.currentMagia - 1 + this.magias.length) % this.magias.length : 0; }
   rightIndexMagia() { return this.magias.length ? (this.currentMagia + 1) % this.magias.length : 0; }
 
@@ -439,9 +488,57 @@ export class CriarPersonagemComponent implements OnInit {
   closePoderDeck() { this.deckOpenPoder = false; }
   prevPoder()      { if (this.poderes.length) this.currentPoder = (this.currentPoder - 1 + this.poderes.length) % this.poderes.length; }
   nextPoder()      { if (this.poderes.length) this.currentPoder = (this.currentPoder + 1) % this.poderes.length; }
-  chooseCurrentPoder() { if (this.poderes.length) { this.selectedPoder = this.poderes[this.currentPoder]; this.deckOpenPoder = false; } }
+  chooseCurrentPoder() {
+    if (this.poderes.length) {
+      const p = this.poderes[this.currentPoder];
+      this.selectedPoder = p;
+      if (!this.selectedPoderes.some(x => x.idPoder === p.idPoder)) {
+        this.selectedPoderes.unshift(p);
+      }
+      this.deckOpenPoder = false;
+    }
+  }
   leftIndexPoder()  { return this.poderes.length ? (this.currentPoder - 1 + this.poderes.length) % this.poderes.length : 0; }
   rightIndexPoder() { return this.poderes.length ? (this.currentPoder + 1) % this.poderes.length : 0; }
+
+  fetchPericias() {
+    this.loadingPericias = true;
+    this.http.get<Pericia[]>(API_ENDPOINTS.pericias).subscribe({
+      next: (arr) => {
+        this.pericias = Array.isArray(arr) ? arr : [];
+
+        const map: Record<number, Pericia[]> = {};
+        for (const p of this.pericias) {
+          const id = p.atributo?.idAtributo ?? -1;
+          if (!map[id]) map[id] = [];
+          map[id].push(p);
+        }
+        this.periciasByAttr = map;
+
+        // garante array para o ngModel de cada caixa
+        Object.keys(this.periciasByAttr).forEach(k => {
+          const id = Number(k);
+          if (!this.selectedPericiasByAttr[id]) this.selectedPericiasByAttr[id] = [];
+        });
+
+        this.loadingPericias = false;
+      },
+      error: () => {
+        this.erro = 'Não foi possível carregar as perícias.';
+        this.loadingPericias = false;
+      }
+    });
+  }
+
+  // abreviação: 3 primeiras letras em maiúsculo (ex.: DES, FOR, INT)
+  abbrAtributo(a?: Atributo | null) {
+    return (a?.nome || '?').slice(0, 3).toUpperCase();
+  }
+
+  // ids de atributo ordenados (para *ngFor)
+  attrIds(): number[] {
+    return Object.keys(this.periciasByAttr).map(Number).filter(n => n >= 0).sort((a,b)=>a-b);
+  }
 
   // ---------- IMG helpers ----------
   imgSrcRaca(r?: Raca): string | null {
@@ -517,6 +614,38 @@ export class CriarPersonagemComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
+  openCard(kind: 'arma' | 'magia' | 'poder', data: any) {
+    this.cardKind = kind;
+    this.cardData = data;
+    this.showCardModal = true;
+    this.isFlipped = false; // começa mostrando a frente
+
+    // imagem da frente conforme o tipo
+    this.cardImgSrc = kind === 'arma'  ? this.imgSrcArma(data)
+                    : kind === 'magia' ? this.imgSrcMagia(data)
+                                      : this.imgSrcPoder(data);
+
+    setTimeout(() => document.getElementById('cardModal')?.focus(), 0);
+  }
+
+  toggleCardFace() {
+    this.isFlipped = !this.isFlipped;
+  }
+
+  closeCardModal() {
+    this.showCardModal = false;
+    this.cardKind = null;
+    this.cardData = null;
+    this.cardImgSrc = null;
+    this.isFlipped = false;
+  }
+
+  removeSelected(kind: 'arma'|'magia'|'poder', id: number) {
+    if (kind === 'arma')   this.selectedArmas   = this.selectedArmas.filter(a => a.idArma   !== id);
+    if (kind === 'magia')  this.selectedMagias  = this.selectedMagias.filter(m => m.idMagia !== id);
+    if (kind === 'poder')  this.selectedPoderes = this.selectedPoderes.filter(p => p.idPoder!== id);
+  }
+
   continuar() {
     if (!this.nome.trim()) { this.erro = 'Informe um nome para o personagem.'; return; }
     if (!this.selectedRaca) { this.erro = 'Escolha uma raça.'; return; }
@@ -529,6 +658,12 @@ export class CriarPersonagemComponent implements OnInit {
       raca: this.selectedRaca?.idRaca,
       classe: this.selectedClasse?.idClasse
     };
+
+    const periciasEscolhidas = Object.values(this.selectedPericiasByAttr).flat();
+    if (periciasEscolhidas.length) {
+      // exemplo: passar como “1,2,5,7”
+      queryParams.pericias = periciasEscolhidas.join(',');
+    }
 
     if (this.selectedOrigem)    queryParams.origem    = this.selectedOrigem.idOrigem;
     if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;

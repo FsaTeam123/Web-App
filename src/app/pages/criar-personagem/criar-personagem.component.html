@@ -478,6 +478,35 @@
           </div>
         </div>
 
+        <!-- ====== P E R Í C I A S (antes da Bolsa) ====== -->
+        <div class="skills-box" role="group" aria-label="Perícias">
+          <div class="skills-title">Perícias</div>
+
+          <div *ngIf="loadingPericias" class="skills-loading">Carregando perícias...</div>
+
+          <div *ngIf="!loadingPericias" class="skills-grid">
+            <div class="skill-col" *ngFor="let attrId of attrIds()">
+              <div class="skill-head">
+                {{ periciasByAttr[attrId][0].atributo?.nome }}
+                <span class="skill-mod">(+ mod {{ abbrAtributo(periciasByAttr[attrId][0].atributo) }})</span>
+              </div>
+
+              <select multiple
+                      class="skill-select"
+                      [size]="Math.min(8, (periciasByAttr[attrId].length || 4))"
+                      [(ngModel)]="selectedPericiasByAttr[attrId]"
+                      [ngModelOptions]="{standalone:true}">
+                <option *ngFor="let p of periciasByAttr[attrId]" [ngValue]="p.idPericia">
+                  {{ p.nome }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- separador visual -->
+        <div class="divider"></div>
+
         <!-- ====== BOLSA (Tibares) ====== -->
         <div class="pouch-box" role="group" aria-label="Bolsa de Tibares">
           <div class="pouch-title">
@@ -588,11 +617,11 @@
                     <div class="name">{{ armas[leftIndexArma()].nome }}</div>
                   </div>
 
-                  <div class="card-deck main" *ngIf="armas.length">
+                  <div class="card-deck main" *ngIf="armas.length" (click)="openCard('arma', armas[currentArma])">
                     <img *ngIf="imgSrcArma(armas[currentArma]) as saC; else noImgAC" [src]="saC" [alt]="armas[currentArma].nome">
                     <ng-template #noImgAC><div class="noimg big">{{ armas[currentArma].nome[0] || 'A' }}</div></ng-template>
                     <div class="name">{{ armas[currentArma].nome }}</div>
-                    <button class="btn btn-primary select-btn" (click)="chooseCurrentArma()">Selecionar</button>
+                    <button class="btn btn-primary select-btn" (click)="$event.stopPropagation(); chooseCurrentArma()">Selecionar</button>
                   </div>
 
                   <div class="card-deck side right" *ngIf="armas.length">
@@ -605,29 +634,15 @@
                 <button class="nav right" (click)="nextArma()" aria-label="Próxima">›</button>
                 <button class="icon-btn close-deck" (click)="closeArmaDeck()" aria-label="Fechar">✕</button>
               </div>
-
-              <!-- Resumo Arma (colapsável) -->
-              <div *ngIf="selectedArma as a" class="pick-info collapsible" [class.open]="expandArma">
-                <button class="collapsible-header" (click)="expandArma = !expandArma" [attr.aria-expanded]="expandArma">
-                  <div class="r-head">
-                    <div class="thumb" *ngIf="imgSrcArma(a) as ia; else ntA"><img [src]="ia" [alt]="a.nome" /></div>
-                    <ng-template #ntA><div class="thumb noimg">{{ a.nome[0] || 'A' }}</div></ng-template>
-                    <div class="r-title">{{ a.nome }}</div>
-                  </div>
-                  <span class="chev">⌄</span>
-                </button>
-
-                <div class="collapsible-body">
-                  <div class="r-desc" *ngIf="a.descricao">{{ a.descricao }}</div>
-
-                  <div class="r-habs">
-                    <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ a.dano || '-' }}</div></div>
-                    <div class="hab"><div class="h-nome">Crítico</div><div class="h-desc">{{ a.critico || '-' }}</div></div>
-                    <div class="hab"><div class="h-nome">Alcance</div><div class="h-desc">{{ a.alcance || '-' }}</div></div>
-                    <div class="hab" *ngIf="a.tipoArma?.nome"><div class="h-nome">Tipo de Arma</div><div class="h-desc">{{ a.tipoArma?.nome }}</div></div>
-                    <div class="hab" *ngIf="a.tipoDano?.nome"><div class="h-nome">Tipo de Dano</div><div class="h-desc">{{ a.tipoDano?.nome }}</div></div>
-                    <div class="hab" *ngIf="a.preco"><div class="h-nome">Preço</div><div class="h-desc">{{ a.preco }}</div></div>
-                  </div>
+              <!-- ===== Selecionados: ARMA ===== -->
+              <div *ngIf="selectedArmas.length" class="chosen-list">
+                <div class="subhead">Armas escolhidas</div>
+                <div class="chosen-row">
+                  <button class="chosen-card" *ngFor="let a of selectedArmas" (click)="openCard('arma', a)">
+                    <img *ngIf="imgSrcArma(a) as src" [src]="src" [alt]="a.nome" />
+                    <div class="cap">{{ a.nome }}</div>
+                    <button class="rm" (click)="$event.stopPropagation(); removeSelected('arma', a.idArma)" aria-label="Remover">✕</button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -661,11 +676,11 @@
                     <div class="name">{{ magias[leftIndexMagia()].nome }}</div>
                   </div>
 
-                  <div class="card-deck main" *ngIf="magias.length">
+                  <div class="card-deck main" *ngIf="magias.length" (click)="openCard('magia', magias[currentMagia])">
                     <img *ngIf="imgSrcMagia(magias[currentMagia]) as smC; else noImgMC" [src]="smC" [alt]="magias[currentMagia].nome">
                     <ng-template #noImgMC><div class="noimg big">{{ magias[currentMagia].nome[0] || 'M' }}</div></ng-template>
                     <div class="name">{{ magias[currentMagia].nome }}</div>
-                    <button class="btn btn-primary select-btn" (click)="chooseCurrentMagia()">Selecionar</button>
+                    <button class="btn btn-primary select-btn" (click)="$event.stopPropagation(); chooseCurrentMagia()">Selecionar</button>
                   </div>
 
                   <div class="card-deck side right" *ngIf="magias.length">
@@ -679,31 +694,15 @@
                 <button class="icon-btn close-deck" (click)="closeMagiaDeck()" aria-label="Fechar">✕</button>
               </div>
 
-              <!-- Resumo Magia (colapsável) -->
-              <div *ngIf="selectedMagia as m" class="pick-info collapsible" [class.open]="expandMagia">
-                <button class="collapsible-header" (click)="expandMagia = !expandMagia" [attr.aria-expanded]="expandMagia">
-                  <div class="r-head">
-                    <div class="thumb" *ngIf="imgSrcMagia(m) as im; else ntM"><img [src]="im" [alt]="m.nome" /></div>
-                    <ng-template #ntM><div class="thumb noimg">{{ m.nome[0] || 'M' }}</div></ng-template>
-                    <div class="r-title">{{ m.nome }}</div>
-                  </div>
-                  <span class="chev">⌄</span>
-                </button>
-
-                <div class="collapsible-body">
-                  <div class="r-desc" *ngIf="m.descricao">{{ m.descricao }}</div>
-
-                  <div class="r-habs">
-                    <div class="hab"><div class="h-nome">Dano</div><div class="h-desc">{{ m.dano || '-' }}</div></div>
-                    <div class="hab" *ngIf="m.custo !== undefined"><div class="h-nome">Custo</div><div class="h-desc">{{ m.custo }}</div></div>
-                    <div class="hab" *ngIf="m.circulo !== undefined"><div class="h-nome">Círculo</div><div class="h-desc">{{ m.circulo }}</div></div>
-                    <div class="hab" *ngIf="m.alvoArea"><div class="h-nome">Alvo/Área</div><div class="h-desc">{{ m.alvoArea }}</div></div>
-                    <div class="hab" *ngIf="m.duracao"><div class="h-nome">Duração</div><div class="h-desc">{{ m.duracao }}</div></div>
-                    <div class="hab" *ngIf="m.escolaMagia?.nome"><div class="h-nome">Escola</div><div class="h-desc">{{ m.escolaMagia?.nome }}</div></div>
-                    <div class="hab" *ngIf="m.execucaoMagia?.nome"><div class="h-nome">Execução</div><div class="h-desc">{{ m.execucaoMagia?.nome }}</div></div>
-                    <div class="hab" *ngIf="m.tipoMagia?.nome"><div class="h-nome">Tipo</div><div class="h-desc">{{ m.tipoMagia?.nome }}</div></div>
-                    <div class="hab" *ngIf="m.resistencia?.nome"><div class="h-nome">Resistência</div><div class="h-desc">{{ m.resistencia?.nome }}</div></div>
-                  </div>
+              <!-- ===== Selecionados: MAGIA (AGORA DENTRO DO .deck-area) ===== -->
+              <div *ngIf="selectedMagias.length" class="chosen-list">
+                <div class="subhead">Magias escolhidas</div>
+                <div class="chosen-row">
+                  <button class="chosen-card" *ngFor="let m of selectedMagias" (click)="openCard('magia', m)">
+                    <img *ngIf="imgSrcMagia(m) as src" [src]="src" [alt]="m.nome" />
+                    <div class="cap">{{ m.nome }}</div>
+                    <button class="rm" (click)="$event.stopPropagation(); removeSelected('magia', m.idMagia)" aria-label="Remover">✕</button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -718,12 +717,9 @@
 
               <!-- Fechado -->
               <button *ngIf="!deckOpenPoder" class="deck-stack" (click)="openPoderDeck()">
-                <div class="stack one"
-                     [style.backgroundImage]="imgSrcPoder(poderes[leftIndexPoder()]) ? 'url(' + imgSrcPoder(poderes[leftIndexPoder()]) + ')' : ''"></div>
-                <div class="stack two"
-                     [style.backgroundImage]="imgSrcPoder(poderes[currentPoder]) ? 'url(' + imgSrcPoder(poderes[currentPoder]) + ')' : ''"></div>
-                <div class="stack three"
-                     [style.backgroundImage]="imgSrcPoder(poderes[rightIndexPoder()]) ? 'url(' + imgSrcPoder(poderes[rightIndexPoder()]) + ')' : ''"></div>
+                <div class="stack one"  [style.backgroundImage]="imgSrcPoder(poderes[leftIndexPoder()]) ? 'url(' + imgSrcPoder(poderes[leftIndexPoder()]) + ')' : ''"></div>
+                <div class="stack two"  [style.backgroundImage]="imgSrcPoder(poderes[currentPoder]) ? 'url(' + imgSrcPoder(poderes[currentPoder]) + ')' : ''"></div>
+                <div class="stack three"[style.backgroundImage]="imgSrcPoder(poderes[rightIndexPoder()]) ? 'url(' + imgSrcPoder(poderes[rightIndexPoder()]) + ')' : ''"></div>
                 <div class="deck-label">
                   <div class="t">Escolher Poder</div>
                   <div class="s">{{ selectedPoder?.nome || 'Toque para abrir' }}</div>
@@ -733,7 +729,6 @@
               <!-- Aberto -->
               <div *ngIf="deckOpenPoder" class="deck-open">
                 <button class="nav left" (click)="prevPoder()" aria-label="Anterior">‹</button>
-
                 <div class="cards">
                   <div class="card-deck side left" *ngIf="poderes.length">
                     <img *ngIf="imgSrcPoder(poderes[leftIndexPoder()]) as spL; else noImgPL" [src]="spL" [alt]="poderes[leftIndexPoder()].nome">
@@ -741,11 +736,11 @@
                     <div class="name">{{ poderes[leftIndexPoder()].nome }}</div>
                   </div>
 
-                  <div class="card-deck main" *ngIf="poderes.length">
+                  <div class="card-deck main" *ngIf="poderes.length" (click)="openCard('poder', poderes[currentPoder])">
                     <img *ngIf="imgSrcPoder(poderes[currentPoder]) as spC; else noImgPC" [src]="spC" [alt]="poderes[currentPoder].nome">
                     <ng-template #noImgPC><div class="noimg big">{{ poderes[currentPoder].nome[0] || 'P' }}</div></ng-template>
                     <div class="name">{{ poderes[currentPoder].nome }}</div>
-                    <button class="btn btn-primary select-btn" (click)="chooseCurrentPoder()">Selecionar</button>
+                    <button class="btn btn-primary select-btn" (click)="$event.stopPropagation(); chooseCurrentPoder()">Selecionar</button>
                   </div>
 
                   <div class="card-deck side right" *ngIf="poderes.length">
@@ -754,35 +749,23 @@
                     <div class="name">{{ poderes[rightIndexPoder()].nome }}</div>
                   </div>
                 </div>
-
                 <button class="nav right" (click)="nextPoder()" aria-label="Próxima">›</button>
                 <button class="icon-btn close-deck" (click)="closePoderDeck()" aria-label="Fechar">✕</button>
               </div>
 
-              <!-- Resumo Poder (colapsável) -->
-              <div *ngIf="selectedPoder as p" class="pick-info collapsible" [class.open]="expandPoder">
-                <button class="collapsible-header" (click)="expandPoder = !expandPoder" [attr.aria-expanded]="expandPoder">
-                  <div class="r-head">
-                    <div class="thumb" *ngIf="imgSrcPoder(p) as ip; else ntP"><img [src]="ip" [alt]="p.nome" /></div>
-                    <ng-template #ntP><div class="thumb noimg">{{ p.nome[0] || 'P' }}</div></ng-template>
-                    <div class="r-title">{{ p.nome }}</div>
-                  </div>
-                  <span class="chev">⌄</span>
-                </button>
-
-                <div class="collapsible-body">
-                  <div class="r-desc" *ngIf="p.descricao">{{ p.descricao }}</div>
-
-                  <div class="r-habs">
-                    <div class="hab" *ngIf="p.tipoPoder?.nome">
-                      <div class="h-nome">Tipo de Poder</div>
-                      <div class="h-desc">{{ p.tipoPoder?.nome }}</div>
-                    </div>
-                  </div>
+              <!-- ===== Selecionados: PODER (AGORA DENTRO DO .deck-area) ===== -->
+              <div *ngIf="selectedPoderes.length" class="chosen-list">
+                <div class="subhead">Poderes escolhidos</div>
+                <div class="chosen-row">
+                  <button class="chosen-card" *ngFor="let p of selectedPoderes" (click)="openCard('poder', p)">
+                    <img *ngIf="imgSrcPoder(p) as src" [src]="src" [alt]="p.nome" />
+                    <div class="cap">{{ p.nome }}</div>
+                    <button class="rm" (click)="$event.stopPropagation(); removeSelected('poder', p.idPoder)" aria-label="Remover">✕</button>
+                  </button>
                 </div>
               </div>
-            </div> <!-- /deck-area -->
-          </div>   <!-- /decks-row.single -->
+            </div>
+          </div>
         </div>
 
         <div class="actions">
@@ -794,3 +777,132 @@
 
   <app-footer shell-footer [siteName]="siteName" [teamName]="'Equipe FSA RPG'" [leftLogoSrc]="'/assets/logo-fsa.png'"></app-footer>
 </app-page-shell>
+
+<!-- ====== MODAL: CARTA ====== -->
+<div *ngIf="showCardModal"
+     class="card-overlay"
+     (click)="closeCardModal()"
+     (keydown.escape)="closeCardModal()"
+     tabindex="-1">
+  <div class="card-modal" role="dialog" aria-modal="true" id="cardModal" (click)="$event.stopPropagation()">
+    <button class="close-x" (click)="closeCardModal()" aria-label="Fechar">✕</button>
+
+    <!-- “Fundo” da carta está no CSS via background-image -->
+    <div class="card-content">
+      <div class="card-title">{{ cardData?.nome }}</div>
+
+      <!-- ARMA -->
+      <ng-container *ngIf="cardKind === 'arma'">
+        <div class="stat-grid">
+          <div class="row"><span class="k">Dano</span><span class="v">{{ cardData?.dano || '-' }}</span></div>
+          <div class="row"><span class="k">Crítico</span><span class="v">{{ cardData?.critico || '-' }}</span></div>
+          <div class="row"><span class="k">Alcance</span><span class="v">{{ cardData?.alcance || '-' }}</span></div>
+          <div class="row" *ngIf="cardData?.tipoArma?.nome"><span class="k">Tipo de Arma</span><span class="v">{{ cardData?.tipoArma?.nome }}</span></div>
+          <div class="row" *ngIf="cardData?.tipoDano?.nome"><span class="k">Tipo de Dano</span><span class="v">{{ cardData?.tipoDano?.nome }}</span></div>
+          <div class="row" *ngIf="cardData?.preco"><span class="k">Preço</span><span class="v">{{ cardData?.preco }}</span></div>
+        </div>
+        <div class="desc" *ngIf="cardData?.descricao">{{ cardData?.descricao }}</div>
+      </ng-container>
+
+      <!-- MAGIA -->
+      <ng-container *ngIf="cardKind === 'magia'">
+        <div class="stat-grid">
+          <div class="row"><span class="k">Dano</span><span class="v">{{ cardData?.dano || '-' }}</span></div>
+          <div class="row" *ngIf="cardData?.custo !== undefined"><span class="k">Custo</span><span class="v">{{ cardData?.custo }}</span></div>
+          <div class="row" *ngIf="cardData?.circulo !== undefined"><span class="k">Círculo</span><span class="v">{{ cardData?.circulo }}</span></div>
+          <div class="row" *ngIf="cardData?.alvoArea"><span class="k">Alvo/Área</span><span class="v">{{ cardData?.alvoArea }}</span></div>
+          <div class="row" *ngIf="cardData?.duracao"><span class="k">Duração</span><span class="v">{{ cardData?.duracao }}</span></div>
+          <div class="row" *ngIf="cardData?.escolaMagia?.nome"><span class="k">Escola</span><span class="v">{{ cardData?.escolaMagia?.nome }}</span></div>
+          <div class="row" *ngIf="cardData?.execucaoMagia?.nome"><span class="k">Execução</span><span class="v">{{ cardData?.execucaoMagia?.nome }}</span></div>
+          <div class="row" *ngIf="cardData?.tipoMagia?.nome"><span class="k">Tipo</span><span class="v">{{ cardData?.tipoMagia?.nome }}</span></div>
+          <div class="row" *ngIf="cardData?.resistencia?.nome"><span class="k">Resistência</span><span class="v">{{ cardData?.resistencia?.nome }}</span></div>
+        </div>
+        <div class="desc" *ngIf="cardData?.descricao">{{ cardData?.descricao }}</div>
+      </ng-container>
+
+      <!-- PODER -->
+      <ng-container *ngIf="cardKind === 'poder'">
+        <div class="stat-grid">
+          <div class="row" *ngIf="cardData?.tipoPoder?.nome"><span class="k">Tipo de Poder</span><span class="v">{{ cardData?.tipoPoder?.nome }}</span></div>
+        </div>
+        <div class="desc" *ngIf="cardData?.descricao">{{ cardData?.descricao }}</div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: CARTA (3D FLIP) ====== -->
+<div *ngIf="showCardModal"
+     class="card-overlay"
+     (click)="closeCardModal()"
+     (keydown.escape)="closeCardModal()"
+     tabindex="-1">
+  <div class="card-modal has-3d" role="dialog" aria-modal="true" id="cardModal"
+       [class.flipped]="isFlipped"
+       (click)="$event.stopPropagation()">
+
+    <div class="flip-3d" (click)="toggleCardFace()">
+
+      <!-- FRENTE: imagem grande da carta -->
+      <div class="card-face front">
+        <button class="close-x" (click)="$event.stopPropagation(); closeCardModal()" aria-label="Fechar">✕</button>
+
+        <ng-container *ngIf="cardImgSrc; else noFront">
+          <img [src]="cardImgSrc" [alt]="cardData?.nome">
+        </ng-container>
+        <ng-template #noFront>
+          <div class="front-mono">{{ (cardData?.nome || '?').slice(0,1) }}</div>
+        </ng-template>
+
+        <div class="flip-hint" aria-hidden="true">Clique para virar</div>
+      </div>
+
+      <!-- VERSO: sua carta com fundo vermelho + verso Card.png + conteúdo -->
+      <div class="card-face back">
+        <button class="close-x" (click)="$event.stopPropagation(); closeCardModal()" aria-label="Fechar">✕</button>
+
+        <div class="card-content">
+          <div class="card-title">{{ cardData?.nome }}</div>
+
+          <!-- ARMA -->
+          <ng-container *ngIf="cardKind === 'arma'">
+            <div class="stat-grid">
+              <div class="row"><span class="k">Dano</span><span class="v">{{ cardData?.dano || '-' }}</span></div>
+              <div class="row"><span class="k">Crítico</span><span class="v">{{ cardData?.critico || '-' }}</span></div>
+              <div class="row"><span class="k">Alcance</span><span class="v">{{ cardData?.alcance || '-' }}</span></div>
+              <div class="row" *ngIf="cardData?.tipoArma?.nome"><span class="k">Tipo de Arma</span><span class="v">{{ cardData?.tipoArma?.nome }}</span></div>
+              <div class="row" *ngIf="cardData?.tipoDano?.nome"><span class="k">Tipo de Dano</span><span class="v">{{ cardData?.tipoDano?.nome }}</span></div>
+              <div class="row" *ngIf="cardData?.preco"><span class="k">Preço</span><span class="v">{{ cardData?.preco }}</span></div>
+            </div>
+            <div class="desc" *ngIf="cardData?.descricao">{{ cardData?.descricao }}</div>
+          </ng-container>
+
+          <!-- MAGIA -->
+          <ng-container *ngIf="cardKind === 'magia'">
+            <div class="stat-grid">
+              <div class="row"><span class="k">Dano</span><span class="v">{{ cardData?.dano || '-' }}</span></div>
+              <div class="row" *ngIf="cardData?.custo !== undefined"><span class="k">Custo</span><span class="v">{{ cardData?.custo }}</span></div>
+              <div class="row" *ngIf="cardData?.circulo !== undefined"><span class="k">Círculo</span><span class="v">{{ cardData?.circulo }}</span></div>
+              <div class="row" *ngIf="cardData?.alvoArea"><span class="k">Alvo/Área</span><span class="v">{{ cardData?.alvoArea }}</span></div>
+              <div class="row" *ngIf="cardData?.duracao"><span class="k">Duração</span><span class="v">{{ cardData?.duracao }}</span></div>
+              <div class="row" *ngIf="cardData?.escolaMagia?.nome"><span class="k">Escola</span><span class="v">{{ cardData?.escolaMagia?.nome }}</span></div>
+              <div class="row" *ngIf="cardData?.execucaoMagia?.nome"><span class="k">Execução</span><span class="v">{{ cardData?.execucaoMagia?.nome }}</span></div>
+              <div class="row" *ngIf="cardData?.tipoMagia?.nome"><span class="k">Tipo</span><span class="v">{{ cardData?.tipoMagia?.nome }}</span></div>
+              <div class="row" *ngIf="cardData?.resistencia?.nome"><span class="k">Resistência</span><span class="v">{{ cardData?.resistencia?.nome }}</span></div>
+            </div>
+            <div class="desc" *ngIf="cardData?.descricao">{{ cardData?.descricao }}</div>
+          </ng-container>
+
+          <!-- PODER -->
+          <ng-container *ngIf="cardKind === 'poder'">
+            <div class="stat-grid">
+              <div class="row" *ngIf="cardData?.tipoPoder?.nome"><span class="k">Tipo de Poder</span><span class="v">{{ cardData?.tipoPoder?.nome }}</span></div>
+            </div>
+            <div class="desc" *ngIf="cardData?.descricao">{{ cardData?.descricao }}</div>
+          </ng-container>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
