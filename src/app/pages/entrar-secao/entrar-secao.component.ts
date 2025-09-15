@@ -225,7 +225,8 @@ export class EntrarSecaoComponent implements OnInit {
 
   entrarSessao() {
     if (!this.selected) return;
-    this.router.navigate(['/criar-personagem'], { queryParams: { jogo: this.selected.idJogo } });
+    
+    this.router.navigate(['/criar-personagem'], { queryParams: { jogo: this.selected.idJogo }  });
   }
 
   // helpers

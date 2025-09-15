@@ -9,6 +9,10 @@ import { API_ENDPOINTS } from '../../../config/app-config';
 import { PageShellComponent } from '../../shared/ui/page-shell/page-shell.component';
 import { AppFooterComponent } from '../../shared/ui/footer/app-footer.component';
 import { AppHeaderComponentFix } from '../../shared/ui/app-header-fixo/app-header-fixo.component';
+import { UserSessionService } from '../../core/session/user-session.service';
+
+import { forkJoin, of } from 'rxjs';
+import { switchMap, map, catchError, finalize } from 'rxjs/operators';
 
 type Habilidade = { id: number; nome: string; descricao?: string; ativo?: number };
 
@@ -133,8 +137,12 @@ export class CriarPersonagemComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private session = inject(UserSessionService);
 
   showHelp = false;
+
+  isSaving = false;
+  idUsuario?: number;
 
   openHelp()  { this.showHelp = true;  }
   closeHelp() { this.showHelp = false; }
@@ -242,6 +250,14 @@ export class CriarPersonagemComponent implements OnInit {
     const q = this.route.snapshot.queryParamMap.get('jogo');
     this.idJogo = q ? Number(q) : undefined;
 
+    const idU =
+      localStorage.getItem('idUsuario') ||
+      sessionStorage.getItem('idUsuario') ||
+      localStorage.getItem('userId');
+    this.idUsuario = idU ? Number(idU) : undefined;
+
+    console.log('RPG: criar personagem, idUsuario:', this.idUsuario, 'idJogo:', this.idJogo);
+
     this.fetchRacas();
     this.fetchClasses();
     this.fetchOrigens();
@@ -307,7 +323,16 @@ export class CriarPersonagemComponent implements OnInit {
 
     this.attrs[key] = v;
   }
+  
+  private toInt(v?: string): number {
+    if (!v) return 0;
+    const n = Number(String(v).replace(',', '.'));
+    return Number.isFinite(n) ? Math.round(n) : 0;
+  }
 
+  private getPlayerIdFromResponse(res: any): number | undefined {
+    return res?.idPlayer ?? res?.playerId ?? res?.id;
+  }
 
   // ---------- R A Ç A ----------
   fetchRacas() {
@@ -646,35 +671,91 @@ export class CriarPersonagemComponent implements OnInit {
     if (kind === 'poder')  this.selectedPoderes = this.selectedPoderes.filter(p => p.idPoder!== id);
   }
 
+  isPericiaChecked(attrId: number, idPericia: number): boolean {
+    const arr = this.selectedPericiasByAttr[attrId] || [];
+    return arr.includes(idPericia);
+  }
+
+  onTogglePericia(attrId: number, idPericia: number, checked: boolean) {
+    const arr = this.selectedPericiasByAttr[attrId] ?? (this.selectedPericiasByAttr[attrId] = []);
+    const i = arr.indexOf(idPericia);
+    if (checked && i === -1) arr.push(idPericia);
+    if (!checked && i !== -1) arr.splice(i, 1);
+  }
+
   continuar() {
-    if (!this.nome.trim()) { this.erro = 'Informe um nome para o personagem.'; return; }
-    if (!this.selectedRaca) { this.erro = 'Escolha uma raça.'; return; }
-    if (!this.selectedClasse) { this.erro = 'Escolha uma classe.'; return; }
-    this.erro = '';
+  if (!this.nome.trim()) { this.erro = 'Informe um nome para o personagem.'; return; }
+  if (!this.selectedRaca) { this.erro = 'Escolha uma raça.'; return; }
+  if (!this.selectedClasse) { this.erro = 'Escolha uma classe.'; return; }
 
-    const queryParams: any = {
-      jogo: this.idJogo,
-      nome: this.nome,
-      raca: this.selectedRaca?.idRaca,
-      classe: this.selectedClasse?.idClasse
-    };
+  // sessão -> pega id de forma tolerante
+  const user = this.session.get(); // pode ser null
+  const userId = this.session.get()?.idUsuario ?? this.idUsuario; // <- só props válidas
+  if (!userId) {
+    this.erro = 'Não consegui identificar seu usuário. Faça login novamente.';
+    return;
+  }
 
-    const periciasEscolhidas = Object.values(this.selectedPericiasByAttr).flat();
-    if (periciasEscolhidas.length) {
-      // exemplo: passar como “1,2,5,7”
-      queryParams.pericias = periciasEscolhidas.join(',');
-    }
+  this.erro = '';
+  this.isSaving = true;
 
-    if (this.selectedOrigem)    queryParams.origem    = this.selectedOrigem.idOrigem;
-    if (this.selectedDivindade) queryParams.divindade = this.selectedDivindade.idDivindade;
-    if (this.selectedArma)      queryParams.arma      = this.selectedArma.idArma;
-    if (this.selectedMagia)     queryParams.magia     = this.selectedMagia.idMagia;
-    if (this.selectedPoder)     queryParams.poder     = this.selectedPoder.idPoder;
+  const pv = this.toInt(this.vitals.pv);
+  const pm = this.toInt(this.vitals.pm);
 
-    Object.entries(this.attrs).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
-    Object.entries(this.vitals).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
-    Object.entries(this.tibares).forEach(([k, v]) => { if (v && v.trim() !== '') queryParams[k] = v.trim(); });
+  const body: any = {
+    nome: this.nome.trim(),
 
-    this.router.navigate(['/criar-personagem/classe'], { queryParams });
+    forca:        this.toInt(this.attrs.forca),
+    destreza:     this.toInt(this.attrs.destreza),
+    sabedoria:    this.toInt(this.attrs.sabedoria),
+    constituicao: this.toInt(this.attrs.constituicao),
+    inteligencia: this.toInt(this.attrs.inteligencia),
+    carisma:      this.toInt(this.attrs.carisma),
+
+    pv, pvMax: pv || 0, pvTemp: 0,
+    pm, pmMax: pm || 0, pmTemp: 0,
+
+    idUsuario: userId,                 // ✅ agora sempre definido
+    idJogo: this.idJogo,
+    idOrigem: this.selectedOrigem?.idOrigem ?? null,
+    idRaca: this.selectedRaca.idRaca,
+    idRiqueza: 1,
+    idDivindade: this.selectedDivindade?.idDivindade ?? null,
+    idClasse: this.selectedClasse.idClasse,
+    idTamanho: 1
+  };
+
+  this.http.post<any>(API_ENDPOINTS.players, body).pipe(
+    switchMap((res) => {
+      const playerId = this.getPlayerIdFromResponse(res);
+      if (!playerId) throw new Error('Resposta sem idPlayer.');
+
+      const calls = [];
+
+      // perícias (dedupe)
+      const periciaIds = Array.from(new Set(Object.values(this.selectedPericiasByAttr).flat()));
+      for (const periciaId of periciaIds) {
+        calls.push(this.http.post(API_ENDPOINTS.pericia_player, { playerId, periciaId }));
+      }
+
+      for (const p of this.selectedPoderes) {
+        calls.push(this.http.post(API_ENDPOINTS.poder_player, { playerId, poderId: p.idPoder }));
+      }
+
+      for (const m of this.selectedMagias) {
+        calls.push(this.http.post(API_ENDPOINTS.magia_player, { playerId, magiaId: m.idMagia }));
+      }
+
+      return calls.length ? forkJoin(calls).pipe(map(() => playerId)) : of(playerId);
+    }),
+    catchError((err) => {
+      const msg = err?.error?.message || err?.message || 'Falha ao salvar.';
+      this.erro = `Não foi possível salvar o personagem. ${msg}`;
+      return of(null);
+    }),
+    finalize(() => this.isSaving = false)
+    ).subscribe((playerId) => {
+      if (playerId) this.router.navigate(['/minhas-sessoes']);
+    });
   }
 };

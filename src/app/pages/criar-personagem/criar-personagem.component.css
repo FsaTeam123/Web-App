@@ -566,3 +566,42 @@ h2 span { color: #e6bd3b; }
   box-shadow: 0 8px 20px rgba(0,0,0,.28);
 }
 .skill-select option { padding: 4px 6px; }
+
+/* Container das caixinhas */
+.skill-list {
+  display: grid;
+  grid-template-columns: 1fr;           /* uma coluna; troque para repeat(2, 1fr) se quiser 2 colunas */
+  gap: 8px;
+  max-height: 220px;                    /* altura rolável, como o <select> */
+  overflow: auto;
+  padding: 8px;
+  background: rgba(20,20,22,.92);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+}
+
+/* Cada item */
+.skill-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  user-select: none;
+}
+
+.skill-box:hover { background: rgba(255,255,255,.07); }
+.skill-box.selected { border-color: #e6bd3b; background: rgba(230,189,59,.12); }
+
+.skill-box input { accent-color: #d4af37; }     /* cor do checkbox (quando suportado) */
+.skill-box .name { font-weight: 700; }
+.skill-box .pill {
+  margin-left: auto;
+  font-size: .8rem;
+  font-weight: 800;
+  background: #d4af37; color: #121212;
+  padding: 2px 8px; border-radius: 999px; border: 1px solid #c29b2e;
+}

@@ -486,20 +486,22 @@
 
           <div *ngIf="!loadingPericias" class="skills-grid">
             <div class="skill-col" *ngFor="let attrId of attrIds()">
-              <div class="skill-head">
+              <div class="skill-head" *ngIf="periciasByAttr[attrId]?.length">
                 {{ periciasByAttr[attrId][0].atributo?.nome }}
                 <span class="skill-mod">(+ mod {{ abbrAtributo(periciasByAttr[attrId][0].atributo) }})</span>
               </div>
 
-              <select multiple
-                      class="skill-select"
-                      [size]="Math.min(8, (periciasByAttr[attrId].length || 4))"
-                      [(ngModel)]="selectedPericiasByAttr[attrId]"
-                      [ngModelOptions]="{standalone:true}">
-                <option *ngFor="let p of periciasByAttr[attrId]" [ngValue]="p.idPericia">
-                  {{ p.nome }}
-                </option>
-              </select>
+              <div class="skill-list">
+                <label class="skill-box"
+                      *ngFor="let p of periciasByAttr[attrId]"
+                      [class.selected]="isPericiaChecked(attrId, p.idPericia)">
+                  <input type="checkbox"
+                        [checked]="isPericiaChecked(attrId, p.idPericia)"
+                        (change)="onTogglePericia(attrId, p.idPericia, $event.target.checked)" />
+                  <span class="name">{{ p.nome }}</span>
+                  <span class="pill" *ngIf="p.atributo">{{ abbrAtributo(p.atributo) }}</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
