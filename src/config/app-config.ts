@@ -1,6 +1,5 @@
 export const API_BASE_URL = 'http://localhost:8085'; // REST base
 
-// REST endpoints
 export const API_ENDPOINTS = {
   sexos: `${API_BASE_URL}/sexos`,
   usuarios: `${API_BASE_URL}/usuarios`,
@@ -20,23 +19,30 @@ export const API_ENDPOINTS = {
   jogosPorMestre: (id: number) => `${API_BASE_URL}/jogos/user/mestrado/${id}`,
   jogosPorJogador: (id: number) => `${API_BASE_URL}/jogos/user/jogador/${id}`,
   playersPorJogo: (idJogo: number) => `${API_BASE_URL}/players/jogo/${idJogo}`,
+
+  // <<< NOVOS ENDPOINTS >>>
+  origens: `${API_BASE_URL}/origens`,
+  divindades: `${API_BASE_URL}/divindades`,
+  armas: `${API_BASE_URL}/armas`,
+  magias: `${API_BASE_URL}/magias`,
+  poderes: `${API_BASE_URL}/poderes`,
+  pericias: `${API_BASE_URL}/pericias`,
+  players: `${API_BASE_URL}/players`,
+  poder_player: `${API_BASE_URL}/poder-player`,
+  pericia_player: `${API_BASE_URL}/pericia-player`,
+  magia_player: `${API_BASE_URL}/magia-player`,
 };
 
 // assets
 export const DEFAULT_AVATAR_PATH = '/assets/perfil-padrao.jpg';
 
-// <<< NOVO: endpoints WebSocket/STOMP centralizados >>>
+// WebSocket/STOMP centralizados (se usar)
 export const WS_ENDPOINTS = {
-  // SockJS endpoint registrado no seu backend: registry.addEndpoint("/ws")
   sockJs: `${API_BASE_URL}/ws`,
-
-  // destinos do broker para ASSINAR (conforme seu WebSocketConfig.enableSimpleBroker("/topic"))
   topics: {
     mesa: (idJogo: number) => `/topic/mesa/${idJogo}`,
     mesaStatus: (idJogo: number) => `/topic/mesa/${idJogo}/status`,
   },
-
-  // destinos de aplicação para ENVIAR (se/quando precisar)
   app: {
     presence: (idJogo: number) => `/app/mesa/${idJogo}/presence`,
   },

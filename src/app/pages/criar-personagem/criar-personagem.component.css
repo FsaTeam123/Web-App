@@ -1,9 +1,9 @@
-/* src/app/pages/criar-personagem/criar-personagem.component.css */
 :host {
   display: block;
   min-height: 100dvh;
   color: #f4f4f5;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
+  overflow-x: hidden;
 }
 
 .wrap { padding: clamp(16px, 2.6vw, 28px); max-width: 1100px; margin: 0 auto; }
@@ -18,8 +18,9 @@ h2 span { color: #e6bd3b; }
 /* ===== layout principal ===== */
 .grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
+  align-items: start;
 }
 .card {
   border: 1px solid rgba(255,255,255,.12);
@@ -27,13 +28,23 @@ h2 span { color: #e6bd3b; }
   border-radius: 16px;
   padding: 14px;
   box-shadow: 0 8px 28px rgba(0,0,0,.25);
+  max-width: 100%; box-sizing: border-box;
 }
 
 /* form */
+.form-card { overflow: visible; }
 .form-card h3 { margin: 4px 0 10px; font-weight: 900; }
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+.form-header h3 { margin: 0; font-weight: 900; }
 .lbl { display:block; margin: 8px 0 6px; color: #d6d6de; }
 .input {
-  width:100%;
+  margin-left: 20px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.18);
   color: #f5f5f7;
@@ -41,22 +52,47 @@ h2 span { color: #e6bd3b; }
   padding: 10px 12px;
   outline: none;
 }
+.identity-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.avatar-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .divider { height: 1px; background: rgba(255,255,255,.08); margin: 12px 0; }
+.avatar {
+  width: 88px; height: 88px; border-radius: 50%;
+  overflow: hidden; border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  display: grid; place-items: center;
+}
+.help-btn {
+  width: 32px; height: 32px; border-radius: 999px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #f4f4f5; font-weight: 900; cursor: pointer;
+}
+.help-btn:hover { background: rgba(255,255,255,.14); }
 
+.identity-grid .avatar { width: 88px; height: 88px; }
+.identity-grid .avatar img { width:100%; height:100%; object-fit: cover; }
 .avatar-row { display:flex; align-items:center; gap:12px; }
 .avatar { width:64px; height:64px; border-radius:50%; overflow:hidden; border:1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); display:grid; place-items:center; }
-.avatar img { width:100%; height:100%; object-fit:cover; }
+.avatar img { width:100%; height:100%; object-fit: cover; }
 .avatar.placeholder { font-weight:900; color:#d6d6de; }
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.input-lg { padding: 14px; font-size: 1.05rem; }
 
 /* ===== DOIS DECKS LADO A LADO ===== */
-.decks-row{
-  display:grid;
+.decks-row {
+  display: grid;
   grid-template-columns: 1fr 1fr;
-  gap:14px;
-  align-items:start;
+  gap: 16px;
+  align-items: start;
 }
+.deck-open { position: relative; padding: 8px 36px; border-radius: 14px; }
 .deck-area { display:flex; flex-direction:column; gap:10px; }
 .area-title { font-weight:900; opacity:.95; }
 
@@ -73,17 +109,25 @@ h2 span { color: #e6bd3b; }
   border: 1px dashed rgba(255,255,255,.22);
   background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
   cursor: pointer;
+  overflow: hidden;
 }
+
+.deck-open {
+  position: relative;
+  padding: 8px 36px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  width: min(460px, 100%);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
 .stack{
   position: absolute; width: 130px; height: 180px; border-radius: 14px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 6px 20px rgba(0,0,0,.25);
-
-  /* mostra a arte inteira das cartas */
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
 }
 .stack.one  { transform: rotate(-8deg) translate(-34px, -6px); }
 .stack.two  { transform: rotate( 4deg) translate(  6px,  8px); }
@@ -94,25 +138,19 @@ h2 span { color: #e6bd3b; }
 .deck-label .s { color:#d6d6de; font-size:.9rem; }
 
 /* --- Deck aberto (carousel) --- */
-.deck-open { position: relative; padding: 8px 36px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; }
 .deck-open .cards{
   display:grid; grid-template-columns: 1fr 1.1fr 1fr;
   align-items:end; gap:10px; justify-items:center;
 }
 
-/* cartas do carousel (aplica a raça e classe) */
+/* cartas do carousel */
 .card-deck, .card-raca{
   position: relative; border-radius: 16px; border: 1px solid rgba(255,255,255,.14);
   background: rgba(14,14,16,.9); color:#f4f4f5;
   aspect-ratio: 3/4; overflow:hidden; display:grid; place-items:center;
   box-shadow: 0 12px 28px rgba(0,0,0,.35);
 }
-.card-deck img, .card-raca img{
-  width: 100%; height: 100%;
-  object-fit: contain;        /* <- não corta a arte */
-  padding: 6px; box-sizing: border-box;
-  background: rgba(255,255,255,.02);
-}
+.card-deck img, .card-raca img { width: 100%; height: 100%; object-fit: contain; max-width: 100%; }
 .card-deck .name, .card-raca .name{
   position:absolute; left:10px; bottom:10px;
   font-weight: 900; background: #d4af37; color:#121212;
@@ -125,7 +163,6 @@ h2 span { color: #e6bd3b; }
 .card-deck.side.left, .card-raca.side.left  { rotate: -4deg; }
 .card-deck.side.right, .card-raca.side.right { rotate: 4deg; }
 .card-deck.main, .card-raca.main { transform: scale(1.02); border-color:#e6bd3b; }
-
 .select-btn { position:absolute; right: 10px; top: 10px; }
 
 .nav {
@@ -182,4 +219,389 @@ h2 span { color: #e6bd3b; }
 @media (max-width: 600px) {
   .deck-open { padding: 8px 28px; }
   .nav { width: 32px; height: 32px; }
+}
+
+/* ===== Tips (colapsável) ===== */
+.tips-card { padding: 0; overflow: hidden; }
+.tips-toggle {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 12px 14px; background: transparent; border: none; color: inherit; font-weight: 900; cursor: pointer;
+}
+.tips-body {
+  max-height: 320px; padding: 0 14px 12px;
+  transition: max-height .25s ease, padding .2s ease, opacity .2s ease;
+  opacity: 1; overflow: hidden;
+}
+.tips-card.collapsed .tips-body { max-height: 0; padding: 0 14px; opacity: 0; }
+.chev { transition: transform .2s ease; }
+.tips-card:not(.collapsed) .chev { transform: rotate(180deg); }
+
+/* ===== Help modal ===== */
+.help-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  display: grid; place-items: center;
+  z-index: 1000;
+}
+.help-modal {
+  width: min(560px, 92vw);
+  background: rgba(20,20,22,.98);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(0,0,0,.45);
+  padding: 14px;
+}
+.help-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.help-header h4 { margin: 0; font-weight: 900; }
+.close-x {
+  width: 32px; height: 32px; border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #f4f4f5; cursor: pointer;
+}
+.close-x:hover { background: rgba(255,255,255,.14); }
+.help-list { margin: 0; padding-left: 18px; color:#d6d6de; }
+.help-list li + li { margin-top: 6px; }
+
+/* ===== Atributos ===== */
+.attr-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(84px, 1fr));
+  gap: 12px;
+  margin: 8px 0 12px;
+  align-items: center;
+}
+.attr {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 10px 24px rgba(0,0,0,.28);
+  display: grid; place-items: center;
+  overflow: hidden;
+}
+.attr .abbr {
+  position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  font-weight: 900; font-size: .8rem; background: #d4af37; color: #121212;
+  padding: 2px 8px; border-radius: 10px; border: 1px solid #c29b2e; letter-spacing: .3px;
+}
+.attr-input {
+  width: 70%; max-width: 68px; height: 44px; text-align: center; font-weight: 900; font-size: 1.15rem;
+  background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.28); color: #f4f4f5; border-radius: 12px; outline: none;
+}
+.attr-input::placeholder { color: #bdbdc6; }
+.attr-input:focus { border-color: #e6bd3b; box-shadow: 0 0 0 2px rgba(212,175,55,.35); }
+@media (max-width: 900px) { .attr-strip { grid-template-columns: repeat(3, minmax(84px, 1fr)); } }
+@media (max-width: 520px) { .attr-input { max-width: 74px; height: 40px; font-size: 1.05rem; } }
+
+/* ===== Vida & Mana ===== */
+.vitals-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px; margin: 6px 0 14px; align-items: center;
+}
+.vital {
+  display: grid; grid-template-columns: 56px 1fr;
+  gap: 10px; align-items: center;
+  background: rgba(14,14,16,.9); border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px; padding: 10px; box-shadow: 0 12px 28px rgba(0,0,0,.28);
+}
+.vital-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.18);
+}
+.vital .label { font-weight: 900; margin-bottom: 4px; }
+.vital-input {
+  width: 96px; max-width: 110px; height: 44px; text-align: center; font-weight: 900; font-size: 1.15rem;
+  background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.28); color: #f4f4f5; border-radius: 12px; outline: none;
+}
+.vital-input::placeholder { color: #bdbdc6; }
+.vital-input:focus { border-color: #e6bd3b; box-shadow: 0 0 0 2px rgba(212,175,55,.35); }
+@media (max-width: 700px) { .vitals-strip { grid-template-columns: 1fr; } }
+
+/* ===== Bolsa (Tibares) ===== */
+.pouch-box {
+  margin: 10px 0 14px; padding: 12px;
+  border: 1px solid rgba(255,255,255,.14); background: rgba(14,14,16,.9);
+  border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.28);
+}
+.pouch-title { font-weight: 900; margin: 0 0 10px; display: inline-flex; align-items: center; gap: 8px; }
+.pouch-title .bag { width: 22px; height: 22px; display: inline-block; }
+.tibares-grid { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 12px; align-items: center; }
+
+.coin {
+  display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: center;
+  background: rgba(20,20,22,.92); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 10px;
+}
+.coin-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(closest-side, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.18);
+}
+.coin .label { font-weight: 900; margin-bottom: 4px; }
+.coin-input {
+  width: 110px; max-width: 120px; height: 44px; text-align: center; font-weight: 900; font-size: 1.15rem;
+  background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.28); color: #f4f4f5; border-radius: 12px; outline: none;
+}
+.coin-input::placeholder { color: #bdbdc6; }
+.coin-input:focus { border-color: #e6bd3b; box-shadow: 0 0 0 2px rgba(212,175,55,.35); }
+@media (max-width: 900px) { .tibares-grid { grid-template-columns: 1fr; } }
+
+/* ==== Collapsibles dos resumos ==== */
+.collapsible { position: relative; }
+.collapsible-header {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 6px 0; background: transparent; border: none; color: inherit; cursor: pointer;
+}
+.collapsible-header .chev { transition: transform .2s ease; font-size: 1.2rem; line-height: 1; opacity: .9; }
+.collapsible.open .collapsible-body { max-height: 600px; padding-top: 8px; opacity: 1; }
+.collapsible-body {
+  max-height: 0; padding: 0; overflow: hidden; opacity: 0;
+  transition: max-height .25s ease, padding .2s ease, opacity .2s ease;
+}
+.decks-row.single { grid-template-columns: 1fr; }
+
+/* ===================================================== */
+/* ===================  MODAL DA CARTA  ================= */
+/* ===================================================== */
+
+.card-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  display: grid; place-items: center;
+  z-index: 2000;
+}
+
+/* Failsafe: se o modal antigo (não-3D) ainda estiver no DOM, esconda-o */
+.card-overlay .card-modal:not(.has-3d) { display: none !important; }
+
+/* contêiner do modal */
+.card-modal {
+  width: min(500px, 92vw);
+  height: calc(min(500px, 92vw) * 88 / 63 + 28px);
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 24px 64px rgba(0,0,0,.55);
+  overflow: hidden;             /* precisa cortar as quinas */
+  isolate: isolate;
+  background: transparent;      /* nada de vermelho aqui */
+}
+
+/* nunca use o ::before global no modal 3D */
+.card-modal::before { display: none !important; }
+
+/* 3D */
+.card-modal.has-3d { perspective: 1400px; }
+.card-modal.has-3d,
+.card-modal.has-3d .flip-3d,
+.card-modal.has-3d .card-face { border-radius: 18px; }
+
+.flip-3d {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 650ms cubic-bezier(.2,.7,.2,1);
+}
+.card-modal.flipped .flip-3d { transform: rotateY(180deg); }
+
+/* faces */
+.card-face {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  backface-visibility: hidden;
+  overflow: hidden; /* garante quinas arredondadas */
+  z-index: 0;
+}
+
+/* FRENTE */
+.card-face.front {
+  display: grid; place-items: center;
+  background: transparent;
+}
+.card-face.front img {
+  width: 100%; height: 100%;
+  object-fit: contain; display: block;
+  border-radius: inherit;
+}
+.front-mono {
+  width: 64px; height: 64px; border-radius: 14px;
+  display: grid; place-items: center; font-weight: 900; font-size: 2rem;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
+}
+.flip-hint {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  padding: 4px 8px; font-size: .8rem; opacity: .9;
+  background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.18); border-radius: 8px;
+}
+
+/* VERSO */
+.card-face.back {
+  transform: rotateY(180deg);
+  background: linear-gradient(0deg, rgba(0,0,0,.85), rgba(160,20,20,.85));
+  z-index: 1;
+}
+.card-face.back::before {
+  content: "";
+  position: absolute; inset: 0;
+  left: 50%; top: 50%;
+  width: 100%; height: 100%;
+  transform: translate(-50%, -50%) scale(var(--img-scale, 1.35));
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+.card-face.back .card-content {
+  position: absolute; inset: 0;
+  padding: 22px 18px 20px;
+  z-index: 1;
+}
+
+/* Conteúdo comum do modal */
+.card-modal .close-x {
+  position: absolute; top: 10px; right: 10px;
+  width: 34px; height: 34px; border-radius: 999px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #f4f4f5; cursor: pointer; z-index: 2;
+}
+.card-modal .close-x:hover { background: rgba(255,255,255,.16); }
+
+.card-content {
+  position: absolute; left: 0; right: 0; top: -12px; bottom: -12px;
+  padding: 22px 18px 20px; color: #f8f8fa; grid-template-rows: auto 1fr;
+}
+.card-title {
+  font-weight: 900; font-size: clamp(1.1rem, 3.6vw, 1.6rem);
+  text-align: center; margin-bottom: 8px; padding: 6px 10px;
+  background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.22); border-radius: 12px;
+}
+.stat-grid {
+  align-self: start; display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px 12px; padding: 10px; background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.18); border-radius: 14px;
+  overflow: auto; max-height: 54%;
+}
+.stat-grid .row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px;
+  background: rgba(255,255,255,.06); font-weight: 700;
+}
+.stat-grid .k { opacity: .95; }
+.stat-grid .v { background: rgba(0,0,0,.18); padding: 2px 8px; border-radius: 8px; }
+.desc {
+  margin-top: 10px; padding: 10px 12px; background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.18); border-radius: 12px; color: #f0f0f5; overflow: auto;
+}
+
+/* (opcional) leve brilho na virada */
+.card-modal.flipped .card-face.back { box-shadow: 0 24px 64px rgba(0,0,0,.55); }
+
+/* ===== Selecionados ===== */
+.chosen-list { margin-top: 10px; }
+.chosen-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.chosen-card {
+  position: relative;
+  width: 100px; aspect-ratio: 3 / 4;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+  background: rgba(14,14,16,.9);
+  overflow: hidden; cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28);
+}
+.chosen-card img { width: 100%; height: 100%; object-fit: cover; }
+.chosen-card .cap {
+  position: absolute; left: 6px; bottom: 6px;
+  font-weight: 800; font-size: .75rem;
+  background: #d4af37; color: #121212;
+  padding: 2px 6px; border-radius: 8px; border: 1px solid #c29b2e;
+}
+.chosen-card .rm {
+  position: absolute; top: 6px; right: 6px;
+  width: 24px; height: 24px; border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #f4f4f5; cursor: pointer;
+}
+.chosen-card .rm:hover { background: rgba(255,255,255,.16); }
+
+/* ===== Perícias (caixas múltiplas) ===== */
+.skills-box {
+  margin: 10px 0 14px; padding: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(14,14,16,.9);
+  border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,.28);
+}
+
+.skills-title { font-weight: 900; margin: 0 0 10px; }
+
+.skills-loading { color: #d6d6de; font-style: italic; }
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.skill-col { display: flex; flex-direction: column; gap: 8px; }
+
+.skill-head {
+  font-weight: 800;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.skill-mod { color: #d6d6de; font-weight: 700; font-size: .9rem; }
+
+.skill-select {
+  min-height: 160px;
+  background: rgba(20,20,22,.92);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  color: #f4f4f5; padding: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28);
+}
+.skill-select option { padding: 4px 6px; }
+
+/* Container das caixinhas */
+.skill-list {
+  display: grid;
+  grid-template-columns: 1fr;           /* uma coluna; troque para repeat(2, 1fr) se quiser 2 colunas */
+  gap: 8px;
+  max-height: 220px;                    /* altura rolável, como o <select> */
+  overflow: auto;
+  padding: 8px;
+  background: rgba(20,20,22,.92);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+}
+
+/* Cada item */
+.skill-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  user-select: none;
+}
+
+.skill-box:hover { background: rgba(255,255,255,.07); }
+.skill-box.selected { border-color: #e6bd3b; background: rgba(230,189,59,.12); }
+
+.skill-box input { accent-color: #d4af37; }     /* cor do checkbox (quando suportado) */
+.skill-box .name { font-weight: 700; }
+.skill-box .pill {
+  margin-left: auto;
+  font-size: .8rem;
+  font-weight: 800;
+  background: #d4af37; color: #121212;
+  padding: 2px 8px; border-radius: 999px; border: 1px solid #c29b2e;
 }
