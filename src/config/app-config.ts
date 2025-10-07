@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://t7tsd4gbsd.execute-api.sa-east-1.amazonaws.com'; // REST base
+export const API_BASE_URL = 'http://localhost:8085'; // REST base
 
 export const API_ENDPOINTS = {
   sexos: `${API_BASE_URL}/sexos`,
@@ -38,12 +38,14 @@ export const DEFAULT_AVATAR_PATH = '/assets/perfil-padrao.jpg';
 
 // WebSocket/STOMP centralizados (se usar)
 export const WS_ENDPOINTS = {
-  sockJs: `${API_BASE_URL}/ws`,
+  sockJs: '/ws',
   topics: {
     mesa: (idJogo: number) => `/topic/mesa/${idJogo}`,
     mesaStatus: (idJogo: number) => `/topic/mesa/${idJogo}/status`,
+    chat: (id:number)=> `/topic/chat.${id}`,
   },
   app: {
     presence: (idJogo: number) => `/app/mesa/${idJogo}/presence`,
+    chatSend: (id:number)=> `/app/chat.${id}.message`,
   },
 };

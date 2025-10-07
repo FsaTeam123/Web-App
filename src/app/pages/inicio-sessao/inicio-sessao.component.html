@@ -48,6 +48,43 @@
 
   <!-- Canvas + UI -->
   <div class="canvas-wrap">
+
+    <!-- Painel de Chat (lateral direita redimensionável) -->
+<aside class="chat-panel" [class.open]="chatOpen" [style.width.px]="chatWidth">
+  <header class="chat-header">
+    <strong>Chat da sessão #{{ (jogo?.idJogo || jogo?.jogo?.idJogo) || '—' }}</strong>
+    <span class="spacer"></span>
+    <button class="chat-btn" (click)="chatOpen=false" aria-label="Fechar">✕</button>
+  </header>
+
+  <div #chatBody class="chat-body">
+    <div class="chat-msg" *ngFor="let m of chatMsgs; trackBy: trackByChat">
+      <div class="chat-meta">
+        <b>{{ m.senderNick || 'Jogador' }}</b>
+        <span> · {{ m.ts | date:'HH:mm' }}</span>
+        <span *ngIf="m.scope"> · {{ m.scope }}</span>
+      </div>
+      <div class="chat-text">{{ m.text }}</div>
+    </div>
+  </div>
+
+  <form class="chat-input" (submit)="sendChat($event)">
+    <input type="text" [(ngModel)]="newMsg" name="msg" placeholder="Digite uma mensagem…" autocomplete="off">
+    <button type="submit">Enviar</button>
+  </form>
+
+  <!-- puxador (resizer) -->
+  <div class="chat-resizer"
+       (pointerdown)="startChatResize($event)"
+       (pointermove)="onChatResizeMove($event)"
+       (pointerup)="endChatResize($event)"
+       (pointercancel)="endChatResize($event)"></div>
+</aside>
+
+<!-- Botão flutuante para abrir o chat (quando fechado) -->
+<button class="chat-fab" *ngIf="!chatOpen" (click)="chatOpen=true" aria-label="Abrir chat">💬</button>
+
+
     <canvas #gridCanvas class="grid-canvas"></canvas>
 
     <!-- Zoom -->
