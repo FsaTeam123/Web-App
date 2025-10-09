@@ -53,9 +53,14 @@ export class StompService implements OnDestroy {
     };
   }
 
-  send(destination: string, body: any) {
+  send(destination: string, body: any, headers: Record<string,string> = {}) {
     if (!this.client) this.connect();
-    this.client?.publish({ destination, body: JSON.stringify(body ?? {}) });
+    const payload = typeof body === 'string' ? body : JSON.stringify(body);
+    this.client?.publish({
+      destination,
+      body: payload,
+      headers: { 'content-type': 'application/json', ...headers },
+    });
   }
 
   disconnect() {

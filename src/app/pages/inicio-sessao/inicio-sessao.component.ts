@@ -1,6 +1,6 @@
 import {
   Component, OnInit, AfterViewInit, OnDestroy,
-  ViewChild, ElementRef, HostListener
+  ViewChild, ElementRef, HostListener, TrackByFunction 
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -32,6 +32,14 @@ interface MesaMasterVM {
   _hasPhoto: boolean;
 }
 
+type ChatMsg = {
+  senderId: number;
+  senderNick: string;
+  text: string;
+  ts: string;     // ISO
+  scope?: string; // opcional
+};
+
 @Component({
   selector: 'app-inicio-sessao',
   standalone: true,
@@ -44,6 +52,30 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('gridCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('hdr', { static: true }) hdrRef!: ElementRef<HTMLElement>;
+
+  // CHAT: estado
+  chatOpen = true;
+  chatWidth = 360;          // px
+  private chatMinW = 260;
+  private chatMaxW = 720;
+  private chatIsResizing = false;
+  private chatStartX = 0;
+  private chatStartW = 0;
+
+  diarioOpen = false;
+  diarioLoading = false;
+  diarioSaving = false;
+  diarioErr: string | null = null;
+
+  diarioId: number | null = null;     // id_anotacao
+  diarioJogoId: number | null = null; // id do jogo
+  diarioText = '';  
+
+  chatMsgs: ChatMsg[] = [];
+  newMsg = '';
+  private unsubChat?: () => void;
+
+  @ViewChild('chatBody') chatBodyRef!: ElementRef<HTMLDivElement>;
 
   jogo: any | null = null;
   activeTab: TabKey = 'lobby';
@@ -165,6 +197,12 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     canvas.addEventListener('pointercancel', this.boundCancel);
     canvas.addEventListener('wheel', this.boundWheel, { passive: false });
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    const saved = +localStorage.getItem(`chatW:${idJogo}`)!;
+    if (saved) this.chatWidth = Math.min(this.chatMaxW, Math.max(this.chatMinW, saved));
+
+    if (idJogo) this.bindChat(idJogo);
   }
 
   ngOnDestroy(): void {
@@ -176,6 +214,7 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.boundCancel) canvas.removeEventListener('pointercancel', this.boundCancel);
     if (this.boundWheel) canvas.removeEventListener('wheel', this.boundWheel as any);
     this.cleanupMesaRealtime();
+    this.unbindChat();
   }
 
   @HostListener('window:resize')
@@ -743,8 +782,169 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // CHAT: bind/unbind
+  private bindChat(idJogo: number){
+    this.unbindChat();
+    const unsub = this.stompSvc.subscribe(
+      WS_ENDPOINTS.topics.chat(idJogo),
+      (frame)=> {
+        try{
+          const msg = JSON.parse(frame.body) as ChatMsg;
+          this.chatMsgs = [...this.chatMsgs, msg];
+          this.scrollChatBottomSoon();
+        }catch(e){ console.warn('chat msg inválida', e); }
+      }
+    );
+    this.unsubChat = unsub;
+  }
+  private unbindChat(){ if (this.unsubChat){ try{ this.unsubChat(); }catch{} this.unsubChat = undefined; } }
+
+  // CHAT: enviar
+  sendChat(ev?: Event){
+    ev?.preventDefault();
+    const txt = (this.newMsg || '').trim();
+    if (!txt) return;
+
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    if (!idJogo) return;
+
+    const payload: ChatMsg = {
+      senderId: 0,                   // preencha com seu usuário logado
+      senderNick: 'Você',            // idem
+      text: txt,
+      ts: new Date().toISOString(),
+      // scope: 'geral'
+    };
+
+    this.stompSvc.send(
+      WS_ENDPOINTS.app.chatSend(idJogo),
+      payload               // ← objeto, sem stringify
+    );
+
+    this.newMsg = '';
+  }
+
+  private scrollChatBottomSoon(){
+    queueMicrotask(()=> {
+      const el = this.chatBodyRef?.nativeElement;
+      if (!el) return;
+      el.scrollTop = el.scrollHeight;
+    });
+  }
+
+  // CHAT: resize (puxador)
+  startChatResize(e: PointerEvent){
+    e.preventDefault();
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    this.chatIsResizing = true;
+    this.chatStartX = e.clientX;
+    this.chatStartW = this.chatWidth;
+  }
+  onChatResizeMove(e: PointerEvent){
+    if (!this.chatIsResizing) return;
+    const dx = (this.chatStartX - e.clientX); // puxador fica na borda esquerda do painel
+    const next = Math.min(this.chatMaxW, Math.max(this.chatMinW, this.chatStartW + dx));
+    this.chatWidth = next;
+  }
+  endChatResize(e: PointerEvent){
+    (e.target as Element).releasePointerCapture?.(e.pointerId);
+    if (!this.chatIsResizing) return;
+    this.chatIsResizing = false;
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    if (idJogo) localStorage.setItem(`chatW:${idJogo}`, String(this.chatWidth));
+  }
+
   // utils mesa
   private isOnline(v: number | null | undefined){ return v === 1; }
   handleImageError(item: { _hasPhoto: boolean }){ item._hasPhoto = false; }
   trackByUserId = (_: number, p: MesaPlayerVM) => p.userId || p.idPlayer;
+  trackByChat: TrackByFunction<ChatMsg> = (index: number, m: ChatMsg) =>
+  // identifique a mensagem; se não tiver ID único do backend,
+  // combine timestamp + senderId (+ tamanho do texto para reduzir colisão)
+  (m.ts ? `${m.ts}|${m.senderId}|${m.text?.length ?? 0}` : index);
+
+  openDiario(){
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    this.diarioOpen = true;
+    this.diarioErr = null;
+
+    if (!idJogo){
+      this.diarioErr = 'ID do jogo não encontrado.';
+      return;
+    }
+
+    this.diarioLoading = true;
+    this.ensureDiarioForGame(idJogo)
+      .finally(()=> this.diarioLoading = false);
+  }
+
+  closeDiario(){
+    this.diarioOpen = false;
+  }
+
+  private async ensureDiarioForGame(idJogo: number){
+    try{
+      const arr = await this.http
+        .get<any[]>(API_ENDPOINTS.anotacoesPorJogo(idJogo))
+        .toPromise();
+
+      if (Array.isArray(arr) && arr.length > 0){
+        const n = arr[0];
+        this.diarioId = n.idAnotacao;
+        this.diarioJogoId = n.jogoId ?? idJogo;
+        this.diarioText = n.anotacao ?? '';
+        return;
+      }
+    }catch(e){
+      console.error(e);
+    }
+
+    // cria se vazio
+    try{
+      await this.http.post(
+        API_ENDPOINTS.anotacoes,
+        {
+          jogoId: String(idJogo),
+          anotacao: 'Escreva aqui suas anotações'
+        }
+      ).toPromise();
+
+      const arr2 = await this.http
+        .get<any[]>(API_ENDPOINTS.anotacoesPorJogo(idJogo))
+        .toPromise();
+
+      const n2 = Array.isArray(arr2) && arr2.length ? arr2[0] : null;
+      if (n2){
+        this.diarioId = n2.idAnotacao;
+        this.diarioJogoId = n2.jogoId ?? idJogo;
+        this.diarioText = n2.anotacao ?? '';
+      }else{
+        this.diarioErr = 'Não foi possível criar/carregar a anotação.';
+      }
+    }catch(e){
+      console.error(e);
+      this.diarioErr = 'Erro ao criar a anotação inicial.';
+    }
+  }
+
+  saveDiario(){
+    if (!this.diarioId || !this.diarioJogoId){
+      this.diarioErr = 'Anotação/Jogo inválidos.';
+      return;
+    }
+    this.diarioSaving = true;
+
+    this.http.put(
+      `${API_ENDPOINTS.anotacoes}/${this.diarioId}`,
+      {
+        jogoId: String(this.diarioJogoId),
+        anotacao: this.diarioText ?? ''
+      }
+    ).toPromise()
+      .catch((e)=> {
+        console.error(e);
+        this.diarioErr = 'Erro ao salvar a anotação.';
+      })
+      .finally(()=> this.diarioSaving = false);
+  }
 }

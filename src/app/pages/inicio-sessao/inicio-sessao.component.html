@@ -19,14 +19,9 @@
         <!-- (antigo Lobby) agora MESA -->
         <button class="nav-btn" (click)="openMesa()" title="Mesa (Participantes)">
             <svg viewBox="0 0 24 24" class="ico">
-                <path d="M3 6h18v3H3V6zm0 5h18v3H3v-3zm0 5h18v3H3v-3z"/>
+                <path d="M16 11a4 4 0 1 0-3.999-4A4 4 0 0 0 16 11zM8 13a4 4 0 1 0-3.999-4A4 4 0 0 0 8 13zm8 2c-3.314 0-6 2.014-6 4.5V22h12v-2.5c0-2.486-2.686-4.5-6-4.5zm-8 0C4.686 15 2 17.014 2 19.5V22h8v-2.5C10 17.014 7.314 15 4 15z"/>
             </svg>
             <span class="nav-label">Mesa</span>
-        </button>
-
-        <button class="nav-btn" [class.active]="activeTab==='personagens'" (click)="go('personagens')" title="Personagens">
-            <svg viewBox="0 0 24 24" class="ico"><path d="M16 11a4 4 0 1 0-3.999-4A4 4 0 0 0 16 11zM8 13a4 4 0 1 0-3.999-4A4 4 0 0 0 8 13zm8 2c-3.314 0-6 2.014-6 4.5V22h12v-2.5c0-2.486-2.686-4.5-6-4.5zm-8 0C4.686 15 2 17.014 2 19.5V22h8v-2.5C10 17.014 7.314 15 4 15z"/></svg>
-            <span class="nav-label">Personagens</span>
         </button>
 
         <button class="nav-btn" [class.active]="activeTab==='mapas'" (click)="go('mapas')" title="Mapas">
@@ -34,20 +29,52 @@
             <span class="nav-label">Mapas</span>
         </button>
 
-        <button class="nav-btn" [class.active]="activeTab==='anotacoes'" (click)="go('anotacoes')" title="Anotações">
-            <svg viewBox="0 0 24 24" class="ico"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5"/></svg>
-            <span class="nav-label">Anotações</span>
-        </button>
-
-        <button class="nav-btn" [class.active]="activeTab==='chat'" (click)="go('chat')" title="Chat">
-            <svg viewBox="0 0 24 24" class="ico"><path d="M21 6a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h6l5 4v-4h1a3 3 0 0 0 3-3V6z"/></svg>
-            <span class="nav-label">Chat</span>
+        <button class="nav-btn" (click)="openDiario()" title="Anotações">
+          <svg viewBox="0 0 24 24" class="ico"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5"/></svg>
+          <span class="nav-label">Anotações</span>
         </button>
     </nav>
   </header>
 
   <!-- Canvas + UI -->
   <div class="canvas-wrap">
+
+    <!-- Painel de Chat (lateral direita redimensionável) -->
+<aside class="chat-panel" [class.open]="chatOpen" [style.width.px]="chatWidth">
+  <header class="chat-header">
+    <strong>Chat da sessão #{{ (jogo?.idJogo || jogo?.jogo?.idJogo) || '—' }}</strong>
+    <span class="spacer"></span>
+    <button class="chat-btn" (click)="chatOpen=false" aria-label="Fechar">✕</button>
+  </header>
+
+  <div #chatBody class="chat-body">
+    <div class="chat-msg" *ngFor="let m of chatMsgs; trackBy: trackByChat">
+      <div class="chat-meta">
+        <b>{{ m.senderNick || 'Jogador' }}</b>
+        <span> · {{ m.ts | date:'HH:mm' }}</span>
+        <span *ngIf="m.scope"> · {{ m.scope }}</span>
+      </div>
+      <div class="chat-text">{{ m.text }}</div>
+    </div>
+  </div>
+
+  <form class="chat-input" (submit)="sendChat($event)">
+    <input type="text" [(ngModel)]="newMsg" name="msg" placeholder="Digite uma mensagem…" autocomplete="off">
+    <button type="submit">Enviar</button>
+  </form>
+
+  <!-- puxador (resizer) -->
+  <div class="chat-resizer"
+       (pointerdown)="startChatResize($event)"
+       (pointermove)="onChatResizeMove($event)"
+       (pointerup)="endChatResize($event)"
+       (pointercancel)="endChatResize($event)"></div>
+</aside>
+
+<!-- Botão flutuante para abrir o chat (quando fechado) -->
+<button class="chat-fab" *ngIf="!chatOpen" (click)="chatOpen=true" aria-label="Abrir chat">💬</button>
+
+
     <canvas #gridCanvas class="grid-canvas"></canvas>
 
     <!-- Zoom -->
@@ -140,5 +167,39 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Diário / Anotações -->
+<div class="diario-overlay" *ngIf="diarioOpen" (click)="closeDiario()">
+  <div class="diario-modal" (click)="$event.stopPropagation()">
+    <header class="diario-header">
+      <h3>Diário da Sessão</h3>
+      <span class="spacer"></span>
+      <button class="diario-btn" (click)="closeDiario()" aria-label="Fechar">✕</button>
+    </header>
+
+    <div class="diario-body">
+      <div *ngIf="diarioLoading" class="diario-muted">Carregando anotações…</div>
+      <div *ngIf="diarioErr" class="diario-err">{{ diarioErr }}</div>
+
+      <div *ngIf="!diarioLoading" class="diario-paper">
+        <textarea
+          [(ngModel)]="diarioText"
+          name="diarioText"
+          rows="14"
+          class="diario-textarea"
+          placeholder="Escreva aqui suas anotações"
+        ></textarea>
+      </div>
+    </div>
+
+    <footer class="diario-footer">
+      <button class="diario-save"
+              [disabled]="diarioSaving || diarioLoading || !diarioId"
+              (click)="saveDiario()">
+        {{ diarioSaving ? 'Salvando…' : 'Salvar alterações' }}
+      </button>
+    </footer>
   </div>
 </div>
