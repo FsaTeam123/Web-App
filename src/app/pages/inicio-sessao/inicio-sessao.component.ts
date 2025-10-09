@@ -62,6 +62,15 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   private chatStartX = 0;
   private chatStartW = 0;
 
+  diarioOpen = false;
+  diarioLoading = false;
+  diarioSaving = false;
+  diarioErr: string | null = null;
+
+  diarioId: number | null = null;     // id_anotacao
+  diarioJogoId: number | null = null; // id do jogo
+  diarioText = '';  
+
   chatMsgs: ChatMsg[] = [];
   newMsg = '';
   private unsubChat?: () => void;
@@ -853,4 +862,89 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   // identifique a mensagem; se não tiver ID único do backend,
   // combine timestamp + senderId (+ tamanho do texto para reduzir colisão)
   (m.ts ? `${m.ts}|${m.senderId}|${m.text?.length ?? 0}` : index);
+
+  openDiario(){
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    this.diarioOpen = true;
+    this.diarioErr = null;
+
+    if (!idJogo){
+      this.diarioErr = 'ID do jogo não encontrado.';
+      return;
+    }
+
+    this.diarioLoading = true;
+    this.ensureDiarioForGame(idJogo)
+      .finally(()=> this.diarioLoading = false);
+  }
+
+  closeDiario(){
+    this.diarioOpen = false;
+  }
+
+  private async ensureDiarioForGame(idJogo: number){
+    try{
+      const arr = await this.http
+        .get<any[]>(API_ENDPOINTS.anotacoesPorJogo(idJogo))
+        .toPromise();
+
+      if (Array.isArray(arr) && arr.length > 0){
+        const n = arr[0];
+        this.diarioId = n.idAnotacao;
+        this.diarioJogoId = n.jogoId ?? idJogo;
+        this.diarioText = n.anotacao ?? '';
+        return;
+      }
+    }catch(e){
+      console.error(e);
+    }
+
+    // cria se vazio
+    try{
+      await this.http.post(
+        API_ENDPOINTS.anotacoes,
+        {
+          jogoId: String(idJogo),
+          anotacao: 'Escreva aqui suas anotações'
+        }
+      ).toPromise();
+
+      const arr2 = await this.http
+        .get<any[]>(API_ENDPOINTS.anotacoesPorJogo(idJogo))
+        .toPromise();
+
+      const n2 = Array.isArray(arr2) && arr2.length ? arr2[0] : null;
+      if (n2){
+        this.diarioId = n2.idAnotacao;
+        this.diarioJogoId = n2.jogoId ?? idJogo;
+        this.diarioText = n2.anotacao ?? '';
+      }else{
+        this.diarioErr = 'Não foi possível criar/carregar a anotação.';
+      }
+    }catch(e){
+      console.error(e);
+      this.diarioErr = 'Erro ao criar a anotação inicial.';
+    }
+  }
+
+  saveDiario(){
+    if (!this.diarioId || !this.diarioJogoId){
+      this.diarioErr = 'Anotação/Jogo inválidos.';
+      return;
+    }
+    this.diarioSaving = true;
+
+    this.http.put(
+      `${API_ENDPOINTS.anotacoes}/${this.diarioId}`,
+      {
+        jogoId: String(this.diarioJogoId),
+        anotacao: this.diarioText ?? ''
+      }
+    ).toPromise()
+      .catch((e)=> {
+        console.error(e);
+        this.diarioErr = 'Erro ao salvar a anotação.';
+      })
+      .finally(()=> this.diarioSaving = false);
+  }
 }

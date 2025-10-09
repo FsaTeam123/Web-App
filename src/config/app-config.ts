@@ -31,6 +31,9 @@ export const API_ENDPOINTS = {
   poder_player: `${API_BASE_URL}/poder-player`,
   pericia_player: `${API_BASE_URL}/pericia-player`,
   magia_player: `${API_BASE_URL}/magia-player`,
+
+  anotacoes: `${API_BASE_URL}/anotacao`,
+  anotacoesPorJogo: (idJogo: number) => `${API_BASE_URL}/anotacao/jogo/${idJogo}`,
 };
 
 // assets

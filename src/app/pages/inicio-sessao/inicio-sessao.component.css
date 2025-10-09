@@ -254,3 +254,72 @@
   background:#d4af37; color:#121212; border:none; border-radius:999px; padding:12px 14px; font-size:18px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.45);
 }
 
+/* Diário */
+.diario-overlay{
+  position: fixed; inset: 0; z-index: 2100;
+  background: rgba(0,0,0,.50);
+  display:flex; align-items: center; justify-content: center;
+  padding: 8px;
+}
+.diario-modal{
+  color:#fff;
+  width: min(900px, 96vw);
+  max-height: 92dvh;
+  background: rgba(18,18,22,.98);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.6);
+  display:flex; flex-direction: column;
+  overflow: hidden;
+}
+.diario-header{
+  display:flex; align-items:center; gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.diario-header h3{ margin:0; font-weight:900; }
+.diario-header .spacer{ flex:1; }
+.diario-btn{
+  background: rgba(20,20,24,.9); color:#f4f4f5;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px; padding:6px 10px; cursor:pointer;
+}
+.diario-body{ padding: 14px; overflow:auto; }
+.diario-footer{
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display:flex; justify-content: flex-end;
+  gap: 8px;
+  background: rgba(12,12,16,.85);
+}
+.diario-muted{ color:#b8b8c3; padding: 8px 2px; }
+.diario-err{ color:#ff8a8a; padding: 8px 2px; }
+
+.diario-save{
+  background:#d4af37; color:#121212; border:none;
+  border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer;
+}
+.diario-save:disabled{
+  opacity:.6; cursor: default;
+}
+
+/* “folha de caderno” */
+.diario-paper{
+  background:
+    linear-gradient(transparent 39px, rgba(255,255,255,.06) 40px) repeat-y,
+    linear-gradient(to right, rgba(230,189,59,.25) 1px, transparent 1px) no-repeat;
+  background-size: 100% 40px, 2px 100%;
+  background-position: 0 0, 48px 0;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  padding: 10px;
+}
+.diario-textarea{
+  width: 100%; min-height: 50vh;
+  border: none; outline: none;
+  background: transparent; color:#f4f4f5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 15px; line-height: 40px; /* alinha com as linhas de caderno */
+  padding-left: 56px;  /* passar da “margem” vertical */
+  resize: vertical;
+}
