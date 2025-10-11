@@ -104,6 +104,8 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   private mapImg: HTMLImageElement | null = null;
   private mapImgLoaded = false;
 
+  private mapViewDebounce?: any;  
+
   private unsubMapWS?: () => void;
 
   constructor(
@@ -179,10 +181,39 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   private mapMinScale = 0.1;  // 10%
   private mapMaxScale = 8;    // 800%
 
-  private setMapScale(v: number){
-    this.mapScale = Math.min(this.mapMaxScale, Math.max(this.mapMinScale, v));
+  private setMapScale(v: number, opts: { silent?: boolean } = {}){
+    const clamped = Math.min(this.mapMaxScale, Math.max(this.mapMinScale, v));
+    if (clamped === this.mapScale) return;
+
+    this.mapScale = clamped;
     this.render();
+
+    // persiste por mapa (opcional)
+    if (this.selectedMapId != null) {
+      localStorage.setItem(`mapScale:${this.selectedMapId}`, String(this.mapScale));
+    }
+
+    // envia WS a não ser que seja aplicação "silenciosa" (vinda do WS)
+    if (!opts.silent) {
+      clearTimeout(this.mapViewDebounce);
+      this.mapViewDebounce = setTimeout(() => {
+        const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+        if (!idJogo || this.selectedMapId == null) return;
+
+        this.stompSvc.send(
+          WS_ENDPOINTS.app.mapSelect(idJogo),
+          {
+            mapaId: this.selectedMapId,
+            scale: this.scale,      // se quiser sincronizar câmera
+            offsetX: this.offsetX,  // idem
+            offsetY: this.offsetY,  // idem
+            mapScale: this.mapScale, // 👈 ESCALA DO MAPA
+          }
+        );
+      }, 80);
+    }
   }
+
   mapScaleIn(){  this.setMapScale(this.mapScale * 1.10); }  // +10%
   mapScaleOut(){ this.setMapScale(this.mapScale / 1.10); }  // -10%
   mapScaleReset(){ this.setMapScale(1); }
@@ -1061,56 +1092,72 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
   // Seleção local + broadcast (opcional)
   async selectMap(m: MapVM, broadcast = true){
     this.selectedMapId = m.idMapa;
-    // carrega a imagem (cache via URL – o endpoint já entrega bytes)
+
     this.mapImgLoaded = false;
     this.mapImg = new Image();
+
     await new Promise<void>((res, rej) => {
       if (!this.mapImg) return res();
-      this.mapImg.onload = ()=>{ this.mapImgLoaded = true; res(); };
-      const rect = this.canvasRef.nativeElement.getBoundingClientRect();
 
-      // "fit to view" opcional (ajusta zoom para caber na tela)
-      const fit = Math.min(
-        rect.width  / this.mapImg!.width,
-        rect.height / this.mapImg!.height
-      );
-      // use 1:1 no máximo para não pixelar; ajuste se quiser permitir zoom-in automático
-      this.scale = this.clampZoom(Math.min(1, fit));
+      this.mapImg.onload = () => {
+        this.mapImgLoaded = true;
 
-      // centraliza o centro do mapa (0,0) no centro da tela
-      this.centerOn(0, 0);
+        // (a) tenta restaurar escala salva deste mapa
+        const saved = localStorage.getItem(`mapScale:${m.idMapa}`);
+        if (saved) {
+          this.setMapScale(+saved, { silent: true });
+        } else {
+          // (b) fit inicial (sem passar de 1:1) — agora com width/height válidos
+          const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+          const fit = Math.min(
+            rect.width  / this.mapImg!.width,
+            rect.height / this.mapImg!.height
+          );
+          this.setMapScale(Math.min(1, fit), { silent: true });
+        }
+
+        // ajusta zoom geral para caber (opcional)
+        {
+          const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+          const fit = Math.min(
+            rect.width  / this.mapImg!.width,
+            rect.height / this.mapImg!.height
+          );
+          this.scale = this.clampZoom(Math.min(1, fit));
+        }
+
+        // centraliza a câmera no centro do mundo (0,0)
+        this.centerOn(0, 0);
+
+        // guarda escala atual
+        this.saveMapScale(m.idMapa);
+
+        this.render();
+        res();
+
+        // 🔊 Broadcast após carregar (incluindo mapScale)
+        if (broadcast) {
+          const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+          if (idJogo){
+            this.stompSvc.send(
+              WS_ENDPOINTS.app.mapSelect(idJogo),
+              {
+                mapaId: m.idMapa,
+                scale: this.scale,
+                offsetX: this.offsetX,
+                offsetY: this.offsetY,
+                mapScale: this.mapScale
+              }
+            );
+          }
+        }
+      };
+
       this.mapImg.onerror = rej;
       this.mapImg.src = m.imgUrl + `?t=` + Date.now(); // bust cache
-
-      // (a) tenta restaurar escala salva deste mapa
-      this.loadMapScale(m.idMapa);
-
-      // (b) se não houver escala salva, faça um "fit" inicial (sem passar de 1:1)
-      if (!localStorage.getItem(`mapScale:${m.idMapa}`)) {
-        const rect = this.canvasRef.nativeElement.getBoundingClientRect();
-        const fit = Math.min(
-          rect.width  / this.mapImg!.width,
-          rect.height / this.mapImg!.height
-        );
-        this.setMapScale(Math.min(1, fit));
-      }
-
-      // centraliza câmera no centro do mundo (mapa está centrado em 0,0)
-      this.centerOn(0, 0);
-
-      // guarde a escala atual
-      this.saveMapScale(m.idMapa);
     });
-    this.render();
 
-    // WS: avisa todo mundo da sessão
-    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
-    if (broadcast && idJogo){
-      this.stompSvc.send(
-        WS_ENDPOINTS.app.mapSelect(idJogo),
-        { mapaId: m.idMapa } // pode incluir {scale, offsetX, offsetY} se quiser sincronizar a câmera
-      );
-    }
+    this.render();
   }
 
   private bindMapSelectedWS(idJogo: number){
@@ -1122,13 +1169,21 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
           const payload = JSON.parse(frame.body || '{}');
           const id = +payload.mapaId;
           if (!id) return;
-          const m = this.maps.find(x => x.idMapa === id);
+          const m = this.maps.find(x => x.idMapa === +payload.mapaId);
           if (m) {
-            // aplica também escala/offset recebidos (se vierem)
+            await this.selectMap(m, /*broadcast*/ false);
+
+            // 2) Aplica câmera recebida (se vier)
             if (typeof payload.scale === 'number') this.scale = this.clampZoom(payload.scale);
             if (typeof payload.offsetX === 'number') this.offsetX = payload.offsetX;
             if (typeof payload.offsetY === 'number') this.offsetY = payload.offsetY;
-            await this.selectMap(m, /*broadcast*/ false);
+
+            // 3) Aplica escala do mapa recebida (silenciosa para não loopar)
+            if (typeof payload.mapScale === 'number') {
+              this.setMapScale(payload.mapScale, { silent: true });
+            }
+
+            this.render();
           } else {
             // não está na lista ainda? recarrega e tenta de novo
             const jid = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
