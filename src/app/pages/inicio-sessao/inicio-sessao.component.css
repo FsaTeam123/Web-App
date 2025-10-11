@@ -323,3 +323,84 @@
   padding-left: 56px;  /* passar da “margem” vertical */
   resize: vertical;
 }
+
+.maps-overlay{
+  position: fixed; inset: 0; z-index: 2050;
+  background: rgba(0,0,0,.50);
+  display:flex; align-items:center; justify-content:center;
+  padding: 8px;
+}
+.maps-modal{
+  color:#fff;
+  width: min(1000px, 96vw);
+  max-height: 92dvh;
+  background: rgba(18,18,22,.98);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.6);
+  display:flex; flex-direction: column;
+  overflow: hidden;
+}
+.maps-header{
+  display:flex; align-items:center; gap:8px;
+  padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.08);
+}
+.maps-header h3{ margin:0; font-weight:900; }
+.maps-header .spacer{ flex:1; }
+.maps-add, .maps-close{
+  background: rgba(20,20,24,.9); color:#f4f4f5;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px; padding:6px 10px; cursor:pointer;
+}
+.maps-add{ margin-right:8px; }
+
+.maps-body{ padding:14px; overflow:auto; }
+.maps-muted{ color:#b8b8c3; padding:8px 2px; }
+.maps-err{ color:#ff8a8a; padding:8px 2px; }
+
+.maps-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+  gap:12px;
+}
+.map-card{
+  display:flex; flex-direction:column; gap:8px;
+  background: rgba(20,20,24,.9); border:1px solid rgba(255,255,255,.12);
+  border-radius:12px; padding:10px;
+}
+.thumb-wrap{
+  position:relative; width:100%; aspect-ratio: 16 / 10;
+  overflow:hidden; border-radius:10px;
+  background:#0e0e12; border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;
+}
+.thumb-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+.thumb-empty{ width:100%; height:100%; display:grid; place-items:center; color:#bbb; font-size:.9rem; }
+.thumb-wrap.selected{ outline: 3px solid #e6bd3b; }
+
+.map-info .map-title{ font-weight:800; }
+.map-info .map-desc{ opacity:.85; font-size:.92rem; }
+
+.map-actions{ display:flex; gap:8px; }
+.map-actions .a-primary{
+  background:#d4af37; color:#121212; border:none; border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;
+}
+.map-actions .a-danger{
+  background:#3b1e1e; color:#fff; border:1px solid #733; border-radius:10px; padding:6px 10px; cursor:pointer;
+}
+
+.form-row{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+.form-row input[type="text"],
+.form-row input[type="number"],
+.form-row textarea{
+  background:#141418; color:#fff; border:1px solid rgba(255,255,255,.12);
+  border-radius:10px; padding:8px 10px;
+}
+.form-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.form-actions button{
+  background: rgba(20,20,24,.9); color:#f4f4f5;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px; padding:8px 12px; cursor:pointer;
+}
+.form-actions button[type="submit"]{
+  background:#d4af37; color:#121212; border:none; font-weight:800;
+}

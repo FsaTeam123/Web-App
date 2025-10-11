@@ -24,9 +24,9 @@
             <span class="nav-label">Mesa</span>
         </button>
 
-        <button class="nav-btn" [class.active]="activeTab==='mapas'" (click)="go('mapas')" title="Mapas">
-            <svg viewBox="0 0 24 24" class="ico"><path d="M15 6l-6 2-5-2v14l6 2 6-2 5 2V8l-6-2zm0 2.2l4 1.6v10l-4-1.6V8.2zM9 8.2l6-2.2v10.8l-6 2.2V8.2zM4 7.2l4 1.6v10.8l-4-1.6V7.2z"/></svg>
-            <span class="nav-label">Mapas</span>
+        <button class="nav-btn" (click)="openMaps()" title="Mapas">
+          <svg viewBox="0 0 24 24" class="ico"><path d="M15 6l-6 2-5-2v14l6 2 6-2 5 2V8l-6-2zm0 2.2l4 1.6v10l-4-1.6V8.2zM9 8.2l6-2.2v10.8l-6 2.2V8.2zM4 7.2l4 1.6v10.8l-4-1.6V7.2z"/></svg>
+          <span class="nav-label">Mapas</span>
         </button>
 
         <button class="nav-btn" (click)="openDiario()" title="Anotações">
@@ -84,6 +84,15 @@
       <button class="zbtn" (click)="zoomIn()" aria-label="Aumentar zoom">+</button>
       <span class="zread">{{ zoomPercent }}%</span>
       <button class="zreset" (click)="zoomReset()">Reset</button>
+    </div>
+
+    <!-- Escala do MAPA -->
+    <div class="zoom-panel" style="left: 16px; bottom: 72px">
+      <button class="zbtn" (click)="mapScaleOut()" aria-label="Diminuir mapa">−</button>
+      <input type="range" min="10" max="800" [(ngModel)]="mapScalePercent" />
+      <button class="zbtn" (click)="mapScaleIn()" aria-label="Aumentar mapa">+</button>
+      <span class="zread">{{ mapScalePercent }}%</span>
+      <button class="zreset" (click)="mapScaleReset()">1:1</button>
     </div>
 
     <!-- Ferramentas de desenho -->
@@ -201,5 +210,80 @@
         {{ diarioSaving ? 'Salvando…' : 'Salvar alterações' }}
       </button>
     </footer>
+  </div>
+</div>
+
+<!-- MAPAS -->
+<div class="maps-overlay" *ngIf="mapsOpen" (click)="closeMaps()">
+  <div class="maps-modal" (click)="$event.stopPropagation()">
+    <header class="maps-header">
+      <h3>Mapas do Jogo</h3>
+      <div class="spacer"></div>
+      <button class="maps-add" (click)="openNewMapModal()">+ Novo mapa</button>
+      <button class="maps-close" (click)="closeMaps()" aria-label="Fechar">✕</button>
+    </header>
+
+    <div class="maps-body">
+      <div *ngIf="mapsLoading" class="maps-muted">Carregando mapas…</div>
+      <div *ngIf="mapsErr" class="maps-err">{{ mapsErr }}</div>
+
+      <div class="maps-grid" *ngIf="!mapsLoading">
+        <div class="map-card" *ngFor="let m of maps; trackBy: trackByMapaId">
+          <div class="thumb-wrap" [class.selected]="m.idMapa===selectedMapId" (click)="selectMap(m)">
+            <img *ngIf="m.hasImage" [src]="m.imgUrl" [alt]="m.nome" />
+            <div *ngIf="!m.hasImage" class="thumb-empty">Sem imagem</div>
+          </div>
+          <div class="map-info">
+            <div class="map-title">{{ m.nome }}</div>
+            <div class="map-desc" *ngIf="m.descricao">{{ m.descricao }}</div>
+          </div>
+          <div class="map-actions">
+            <button class="a-primary" (click)="selectMap(m)">Tornar ativo</button>
+            <button class="a-danger" (click)="deleteMap(m)">Excluir</button>
+          </div>
+        </div>
+
+        <div *ngIf="!mapsErr && !mapsLoading && maps.length===0" class="maps-muted">
+          Nenhum mapa cadastrado ainda.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Novo mapa -->
+<div class="maps-overlay" *ngIf="mapModalOpen" (click)="closeNewMapModal()">
+  <div class="maps-modal" (click)="$event.stopPropagation()">
+    <header class="maps-header">
+      <h3>Novo Mapa</h3>
+      <div class="spacer"></div>
+      <button class="maps-close" (click)="closeNewMapModal()">✕</button>
+    </header>
+
+    <div class="maps-body">
+      <form (submit)="$event.preventDefault(); createMap()">
+        <div class="form-row">
+          <label>Nome</label>
+          <input type="text" [(ngModel)]="mapForm.nome" name="mapName" required />
+        </div>
+        <div class="form-row">
+          <label>Descrição</label>
+          <textarea rows="3" [(ngModel)]="mapForm.descricao" name="mapDesc"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Tamanho do grid (px)</label>
+          <input type="number" min="8" max="256" [(ngModel)]="mapForm.grid" name="mapGrid" />
+        </div>
+        <div class="form-row">
+          <label>Imagem</label>
+          <input type="file" accept="image/*" (change)="onMapFileChange($event)" />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="closeNewMapModal()">Cancelar</button>
+          <button type="submit" [disabled]="mapSaving">{{ mapSaving ? 'Salvando…' : 'Criar' }}</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
