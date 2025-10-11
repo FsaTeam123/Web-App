@@ -40,6 +40,17 @@ type ChatMsg = {
   scope?: string; // opcional
 };
 
+type MapVM = {
+  idMapa: number;
+  idJogo: number;
+  nome: string;
+  descricao?: string;
+  grid?: number;
+  ativo?: number;
+  hasImage: boolean;
+  imgUrl: string; // conveniência (API_ENDPOINTS.mapaImagem)
+};
+
 @Component({
   selector: 'app-inicio-sessao',
   standalone: true,
@@ -79,6 +90,23 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
 
   jogo: any | null = null;
   activeTab: TabKey = 'lobby';
+
+  mapsOpen = false;
+  mapsLoading = false;
+  mapsErr: string | null = null;
+  maps: MapVM[] = [];
+
+  mapModalOpen = false;           // pop-up "Novo mapa"
+  mapSaving = false;
+  mapForm = { nome: '', descricao: '', grid: 48, file: null as File | null };
+
+  selectedMapId: number | null = null;
+  private mapImg: HTMLImageElement | null = null;
+  private mapImgLoaded = false;
+
+  private mapViewDebounce?: any;  
+
+  private unsubMapWS?: () => void;
 
   constructor(
     private router: Router,
@@ -149,6 +177,55 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private mesaUnsubs: Array<() => void> = [];
 
+  private mapScale = 1;       // 1 = 100%
+  private mapMinScale = 0.1;  // 10%
+  private mapMaxScale = 8;    // 800%
+
+  private setMapScale(v: number, opts: { silent?: boolean } = {}){
+    const clamped = Math.min(this.mapMaxScale, Math.max(this.mapMinScale, v));
+    if (clamped === this.mapScale) return;
+
+    this.mapScale = clamped;
+    this.render();
+
+    // persiste por mapa (opcional)
+    if (this.selectedMapId != null) {
+      localStorage.setItem(`mapScale:${this.selectedMapId}`, String(this.mapScale));
+    }
+
+    // envia WS a não ser que seja aplicação "silenciosa" (vinda do WS)
+    if (!opts.silent) {
+      clearTimeout(this.mapViewDebounce);
+      this.mapViewDebounce = setTimeout(() => {
+        const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+        if (!idJogo || this.selectedMapId == null) return;
+
+        this.stompSvc.send(
+          WS_ENDPOINTS.app.mapSelect(idJogo),
+          {
+            mapaId: this.selectedMapId,
+            scale: this.scale,      // se quiser sincronizar câmera
+            offsetX: this.offsetX,  // idem
+            offsetY: this.offsetY,  // idem
+            mapScale: this.mapScale, // 👈 ESCALA DO MAPA
+          }
+        );
+      }, 80);
+    }
+  }
+
+  mapScaleIn(){  this.setMapScale(this.mapScale * 1.10); }  // +10%
+  mapScaleOut(){ this.setMapScale(this.mapScale / 1.10); }  // -10%
+  mapScaleReset(){ this.setMapScale(1); }
+  get mapScalePercent(){ return Math.round(this.mapScale * 100); }
+  set mapScalePercent(v: number){ this.setMapScale(v/100); }
+  private saveMapScale(mapId: number){ localStorage.setItem(`mapScale:${mapId}`, String(this.mapScale)); }
+  private loadMapScale(mapId: number){
+    const v = +(localStorage.getItem(`mapScale:${mapId}`) ?? '0');
+    if (v > 0){ this.setMapScale(v); }
+  }
+
+
   ngOnInit(): void {
     const st = history.state?.jogo;
     if (st) {
@@ -203,6 +280,10 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     if (saved) this.chatWidth = Math.min(this.chatMaxW, Math.max(this.chatMinW, saved));
 
     if (idJogo) this.bindChat(idJogo);
+    if (idJogo) {
+      this.bindMapSelectedWS(idJogo);
+      this.loadMapsForGame(idJogo);
+    }
   }
 
   ngOnDestroy(): void {
@@ -213,6 +294,7 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.boundUp) canvas.removeEventListener('pointerup', this.boundUp);
     if (this.boundCancel) canvas.removeEventListener('pointercancel', this.boundCancel);
     if (this.boundWheel) canvas.removeEventListener('wheel', this.boundWheel as any);
+    if (this.unsubMapWS){ try{ this.unsubMapWS(); }catch{} this.unsubMapWS = undefined; }
     this.cleanupMesaRealtime();
     this.unbindChat();
   }
@@ -544,6 +626,16 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private onWheel(e: WheelEvent) {
     e.preventDefault();
+
+    // Alt + Scroll => escala do MAPA
+    if (e.altKey){
+      const delta = Math.sign(e.deltaY);
+      const factor = delta > 0 ? 1/1.12 : 1.12;
+      this.setMapScale(this.mapScale * factor);
+      return;
+    }
+
+    // Scroll normal => zoom geral
     const delta = Math.sign(e.deltaY);
     const factor = delta > 0 ? 1/1.12 : 1.12;
     const p = this.getLocal(e);
@@ -567,6 +659,21 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dpr * this.offsetY
     );
 
+    // 1) mapa (fundo)
+    if (this.mapImg && this.mapImgLoaded) {
+      // tamanho final do mapa em "unidades de mundo"
+      const w = this.mapImg.width  * this.mapScale;
+      const h = this.mapImg.height * this.mapScale;
+
+      // centraliza o mapa no (0,0) do mundo
+      const mx = -w/2;
+      const my = -h/2;
+
+      // suavização ligada (ou desligue se quiser pixel art)
+      this.ctx.imageSmoothingEnabled = true;
+
+      ctx.drawImage(this.mapImg, mx, my, w, h);
+    }
     this.drawGrid(ctx);
     ctx.drawImage(this.art, -this.origin.x, -this.origin.y);
 
@@ -946,5 +1053,219 @@ export class InicioSessaoComponent implements OnInit, AfterViewInit, OnDestroy {
         this.diarioErr = 'Erro ao salvar a anotação.';
       })
       .finally(()=> this.diarioSaving = false);
+  }
+
+  openMaps(){
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    if (!idJogo){ this.mapsErr = 'ID do jogo não encontrado.'; this.mapsOpen = true; return; }
+    this.mapsOpen = true;
+    this.mapsErr = null;
+    this.loadMapsForGame(idJogo);
+  }
+
+  closeMaps(){ this.mapsOpen = false; this.mapModalOpen = false; }
+
+  private async loadMapsForGame(idJogo: number){
+    this.mapsLoading = true; this.mapsErr = null;
+    try{
+      const arr = await this.http.get<any[]>(API_ENDPOINTS.mapasPorJogo(idJogo)).toPromise();
+      this.maps = (arr ?? []).map((m:any) => ({
+        idMapa: m.idMapa,
+        idJogo: m.idJogo ?? idJogo,
+        nome: m.nome,
+        descricao: m.descricao,
+        grid: m.grid,
+        ativo: m.ativo,
+        hasImage: !!m.hasImage,
+        imgUrl: API_ENDPOINTS.mapaImagem(m.idMapa)
+      }));
+    }catch(e){
+      console.error(e);
+      this.mapsErr = 'Erro ao carregar mapas do jogo.';
+    }finally{
+      this.mapsLoading = false;
+    }
+  }
+
+  trackByMapaId = (_: number, m: MapVM) => m.idMapa;
+
+  // Seleção local + broadcast (opcional)
+  async selectMap(m: MapVM, broadcast = true){
+    this.selectedMapId = m.idMapa;
+
+    this.mapImgLoaded = false;
+    this.mapImg = new Image();
+
+    await new Promise<void>((res, rej) => {
+      if (!this.mapImg) return res();
+
+      this.mapImg.onload = () => {
+        this.mapImgLoaded = true;
+
+        // (a) tenta restaurar escala salva deste mapa
+        const saved = localStorage.getItem(`mapScale:${m.idMapa}`);
+        if (saved) {
+          this.setMapScale(+saved, { silent: true });
+        } else {
+          // (b) fit inicial (sem passar de 1:1) — agora com width/height válidos
+          const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+          const fit = Math.min(
+            rect.width  / this.mapImg!.width,
+            rect.height / this.mapImg!.height
+          );
+          this.setMapScale(Math.min(1, fit), { silent: true });
+        }
+
+        // ajusta zoom geral para caber (opcional)
+        {
+          const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+          const fit = Math.min(
+            rect.width  / this.mapImg!.width,
+            rect.height / this.mapImg!.height
+          );
+          this.scale = this.clampZoom(Math.min(1, fit));
+        }
+
+        // centraliza a câmera no centro do mundo (0,0)
+        this.centerOn(0, 0);
+
+        // guarda escala atual
+        this.saveMapScale(m.idMapa);
+
+        this.render();
+        res();
+
+        // 🔊 Broadcast após carregar (incluindo mapScale)
+        if (broadcast) {
+          const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+          if (idJogo){
+            this.stompSvc.send(
+              WS_ENDPOINTS.app.mapSelect(idJogo),
+              {
+                mapaId: m.idMapa,
+                scale: this.scale,
+                offsetX: this.offsetX,
+                offsetY: this.offsetY,
+                mapScale: this.mapScale
+              }
+            );
+          }
+        }
+      };
+
+      this.mapImg.onerror = rej;
+      this.mapImg.src = m.imgUrl + `?t=` + Date.now(); // bust cache
+    });
+
+    this.render();
+  }
+
+  private bindMapSelectedWS(idJogo: number){
+    if (this.unsubMapWS){ try{ this.unsubMapWS(); }catch{} this.unsubMapWS = undefined; }
+    this.unsubMapWS = this.stompSvc.subscribe(
+      WS_ENDPOINTS.topics.mapaSelected(idJogo),
+      async (frame) => {
+        try{
+          const payload = JSON.parse(frame.body || '{}');
+          const id = +payload.mapaId;
+          if (!id) return;
+          const m = this.maps.find(x => x.idMapa === +payload.mapaId);
+          if (m) {
+            await this.selectMap(m, /*broadcast*/ false);
+
+            // 2) Aplica câmera recebida (se vier)
+            if (typeof payload.scale === 'number') this.scale = this.clampZoom(payload.scale);
+            if (typeof payload.offsetX === 'number') this.offsetX = payload.offsetX;
+            if (typeof payload.offsetY === 'number') this.offsetY = payload.offsetY;
+
+            // 3) Aplica escala do mapa recebida (silenciosa para não loopar)
+            if (typeof payload.mapScale === 'number') {
+              this.setMapScale(payload.mapScale, { silent: true });
+            }
+
+            this.render();
+          } else {
+            // não está na lista ainda? recarrega e tenta de novo
+            const jid = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+            if (jid){ await this.loadMapsForGame(jid); }
+            const m2 = this.maps.find(x => x.idMapa === id);
+            if (m2) await this.selectMap(m2, false);
+          }
+        }catch(e){ console.warn('mapa selected payload inválido', e); }
+      }
+    );
+  }
+
+  // Pop-up "Novo mapa"
+  openNewMapModal(){ this.mapModalOpen = true; this.mapForm = { nome:'', descricao:'', grid:48, file:null }; }
+  closeNewMapModal(){ this.mapModalOpen = false; }
+
+  // Criar mapa (POST JSON -> POST imagem)
+  async createMap(){
+    const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+    if (!idJogo){ return; }
+    if (!this.mapForm.nome?.trim()){ alert('Informe um nome para o mapa.'); return; }
+
+    this.mapSaving = true;
+    try{
+      // 1) cria o metadado
+      const body = {
+        nome: this.mapForm.nome.trim(),
+        descricao: this.mapForm.descricao?.trim() ?? '',
+        grid: this.mapForm.grid ?? 48,
+        ativo: 1,
+        jogo: { idJogo } // ManyToOne
+      };
+      const created = await this.http.post<any>(API_ENDPOINTS.mapas, body).toPromise();
+      const newId = created?.idMapa;
+
+      // 2) envia a imagem (se houver)
+      if (newId && this.mapForm.file){
+        const fd = new FormData();
+        fd.append('file', this.mapForm.file);
+        await this.http.post(`${API_ENDPOINTS.mapas}/${newId}/imagem`, fd).toPromise();
+      }
+
+      // 3) recarrega a lista e fecha modal
+      await this.loadMapsForGame(idJogo);
+      this.mapModalOpen = false;
+
+    }catch(e){
+      console.error(e);
+      alert('Erro ao criar o mapa.');
+    }finally{
+      this.mapSaving = false;
+    }
+  }
+
+  // Deletar mapa
+  async deleteMap(m: MapVM){
+    if (!confirm(`Excluir definitivamente o mapa "${m.nome}"?`)) return;
+    try{
+      await this.http.delete(`${API_ENDPOINTS.mapas}/${m.idMapa}`).toPromise();
+      const idJogo = this.jogo?.idJogo || this.jogo?.jogo?.idJogo;
+      if (idJogo) await this.loadMapsForGame(idJogo);
+      if (this.selectedMapId === m.idMapa){
+        this.selectedMapId = null;
+        this.mapImg = null; this.mapImgLoaded = false; this.render();
+      }
+    }catch(e){
+      console.error(e);
+      alert('Erro ao excluir o mapa.');
+    }
+  }
+
+  // file input handler
+  onMapFileChange(ev: Event){
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.mapForm.file = file;
+  }
+
+  private centerOn(wx: number, wy: number) {
+    const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    this.offsetX = rect.width  / 2 - wx * this.scale;
+    this.offsetY = rect.height / 2 - wy * this.scale;
+    this.render();
   }
 }

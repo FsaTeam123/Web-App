@@ -31,6 +31,9 @@ export const API_ENDPOINTS = {
   poder_player: `${API_BASE_URL}/poder-player`,
   pericia_player: `${API_BASE_URL}/pericia-player`,
   magia_player: `${API_BASE_URL}/magia-player`,
+  mapas: `${API_BASE_URL}/mapas`,
+  mapasPorJogo: (idJogo: number) => `${API_BASE_URL}/mapas/jogo/${idJogo}`,
+  mapaImagem: (idMapa: number) => `${API_BASE_URL}/mapas/${idMapa}/imagem`,
 
   anotacoes: `${API_BASE_URL}/anotacao`,
   anotacoesPorJogo: (idJogo: number) => `${API_BASE_URL}/anotacao/jogo/${idJogo}`,
@@ -46,9 +49,11 @@ export const WS_ENDPOINTS = {
     mesa: (idJogo: number) => `/topic/mesa/${idJogo}`,
     mesaStatus: (idJogo: number) => `/topic/mesa/${idJogo}/status`,
     chat: (id:number)=> `/topic/chat.${id}`,
+    mapaSelected: (idJogo: number) => `/topic/mapa.${idJogo}.selected`,
   },
   app: {
     presence: (idJogo: number) => `/app/mesa/${idJogo}/presence`,
     chatSend: (id:number)=> `/app/chat.${id}.message`,
+    mapSelect: (idJogo: number) => `/app/mapa.${idJogo}.select`,
   },
 };
